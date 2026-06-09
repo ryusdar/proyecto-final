@@ -34,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Container(
                 width: double.infinity,
-                height: 290,
+                height: 270,
                 decoration: const BoxDecoration(
                   color: Color(0xFF35D19A),
                   borderRadius: BorderRadius.only(
@@ -54,25 +54,10 @@ class ProfileScreen extends StatelessWidget {
                         },
                       ),
                     ),
-
                     const Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.shopping_bag_outlined,
-                            size: 45,
-                            color: Colors.cyanAccent,
-                          ),
-                          Text(
-                            "Vynta",
-                            style: TextStyle(
-                              fontSize: 22,
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 15),
                           CircleAvatar(
                             radius: 55,
                             backgroundColor: Colors.white,
@@ -108,12 +93,9 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 25),
-
               profileOption(Icons.info, "Informacion personal"),
               profileOption(Icons.favorite, "Favoritos"),
-
               profileOption(
                 Icons.shopping_bag_outlined,
                 "Compras",
@@ -121,7 +103,6 @@ class ProfileScreen extends StatelessWidget {
                   Navigator.pop(context);
                 },
               ),
-
               profileOption(Icons.local_shipping, "Metodos de pago"),
             ],
           ),

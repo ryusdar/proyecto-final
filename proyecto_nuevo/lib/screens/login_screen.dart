@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import '../widgets/vynta_logo.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -18,24 +19,11 @@ class LoginScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 38),
               child: Column(
                 children: [
-                  const SizedBox(height: 55),
+                  const SizedBox(height: 40),
 
-                  const Icon(
-                    Icons.shopping_bag_outlined,
-                    size: 80,
-                    color: Colors.cyanAccent,
-                  ),
+                  const VyntaLogo(width: 140),
 
-                  const Text(
-                    "Vynta",
-                    style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.cyan,
-                    ),
-                  ),
-
-                  const SizedBox(height: 75),
+                  const SizedBox(height: 60),
 
                   const Text(
                     "BIENVENIDOS DE NUEVO",

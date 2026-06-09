@@ -96,26 +96,6 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.shopping_bag_outlined,
-                          size: 42,
-                          color: Colors.cyanAccent,
-                        ),
-                        Text(
-                          "Vynta",
-                          style: TextStyle(
-                            color: Colors.cyan,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(width: 10),
-
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
