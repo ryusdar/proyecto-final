@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'main_shell.dart';
-import 'register_screen.dart';
+import 'login_screen.dart';
 import '../widgets/vynta_logo.dart';
-import '../widgets/build_footer.dart';
 import '../core/vynta_colors.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
@@ -46,6 +47,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _register() {
+    // Lógica simulada: solo navega al Home tras "registrarse".
+    // Las validaciones reales (campos no vacíos) se agregan luego con backend.
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,23 +71,51 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 30),
-                  Center(child: VyntaLogo(width: 150)),
-                  const SizedBox(height: 50),
+                  // Botón volver
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: VyntaColors.cardWhite,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  Center(child: VyntaLogo(width: 120)),
+                  const SizedBox(height: 24),
+
                   const Text(
-                    "BIENVENIDOS DE NUEVO",
+                    "Crear cuenta",
                     style: TextStyle(
                       color: VyntaColors.cardWhite,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.2,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Text(
-                    "Iniciá sesión para seguir comprando",
+                    "Unite a Vynta y mostrá tus manualidades",
                     style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 26),
+
+                  const Text(
+                    "Nombre",
+                    style: TextStyle(
+                      color: VyntaColors.cardWhite,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _nameController,
+                    style: const TextStyle(color: VyntaColors.cardWhite),
+                    decoration: _inputDecoration(
+                      'Tu nombre',
+                      Icons.person_outline,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
 
                   const Text(
                     "Correo electrónico",
@@ -97,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 20),
 
                   const Text(
                     "Contraseña",
@@ -111,8 +149,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     style: const TextStyle(color: VyntaColors.cardWhite),
-                    decoration: _inputDecoration('••••••••', Icons.lock_outline)
-                        .copyWith(
+                    decoration:
+                        _inputDecoration(
+                          'Mínimo 6 caracteres',
+                          Icons.lock_outline,
+                        ).copyWith(
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
@@ -127,18 +168,40 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                   ),
 
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        "¿Olvidaste tu contraseña?",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "Confirmar contraseña",
+                    style: TextStyle(
+                      color: VyntaColors.cardWhite,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _confirmController,
+                    obscureText: _obscureConfirm,
+                    style: const TextStyle(color: VyntaColors.cardWhite),
+                    decoration:
+                        _inputDecoration(
+                          'Repetí tu contraseña',
+                          Icons.lock_outline,
+                        ).copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirm
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: VyntaColors.cardWhite,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm,
+                            ),
+                          ),
+                        ),
+                  ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 30),
 
                   SizedBox(
                     width: double.infinity,
@@ -152,16 +215,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MainShell(),
-                          ),
-                        );
-                      },
+                      onPressed: _register,
                       child: const Text(
-                        "Iniciar sesión",
+                        "Registrarme",
                         style: TextStyle(
                           color: VyntaColors.ink,
                           fontWeight: FontWeight.bold,
@@ -173,49 +229,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 22),
 
-                  // Toda la fila es un área clickeable con cursor pointer.
                   Center(
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const RegisterScreen(),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "¿Ya tenés cuenta?",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            "Iniciar sesión",
+                            style: TextStyle(
+                              color: VyntaColors.cardWhite,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                              decorationColor: VyntaColors.cardWhite,
                             ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                "¿No tenés cuenta?",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              const SizedBox(width: 4),
-                              const Text(
-                                "Regístrate",
-                                style: TextStyle(
-                                  color: VyntaColors.cardWhite,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: VyntaColors.cardWhite,
-                                  decorationThickness: 1.5,
-                                ),
-                              ),
-                            ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const SizedBox(height: 24),
-                  const Center(child: BuildFooter()),
                 ],
               ),
             ),
