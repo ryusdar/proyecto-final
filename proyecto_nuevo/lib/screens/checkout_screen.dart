@@ -18,11 +18,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'Tarjeta de crédito',
       'Visa · Masercard · Amex',
     ),
-    _PaymentMethod(
-      Icons.account_balance_wallet,
-      'Efectivo en punto de retiro',
-      'Abonás al retirar',
-    ),
+
     _PaymentMethod(
       Icons.account_balance,
       'Transferencia bancaria',
