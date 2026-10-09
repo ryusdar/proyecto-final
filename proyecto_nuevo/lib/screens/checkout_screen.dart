@@ -18,11 +18,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'Tarjeta de crédito',
       'Visa · Masercard · Amex',
     ),
-    _PaymentMethod(
-      Icons.account_balance_wallet,
-      'Efectivo en punto de retiro',
-      'Abonás al retirar',
-    ),
+
     _PaymentMethod(
       Icons.account_balance,
       'Transferencia bancaria',
@@ -40,7 +36,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final store = VyntaStore.instance;
         final cart = store.cart;
 
-        // Si el carrito está vacío (ya se pagó o se limpió), no mostrar checkout.
+        // Si el carrito está vacío no mostrar checkout.
         if (cart.isEmpty) {
           return Scaffold(
             backgroundColor: VyntaColors.contentGrey,
@@ -317,7 +313,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final paid = store.cartSubtotal;
     final methodName = _methods[_selectedMethod].name;
 
-    // Simula el pago: limpia el carrito y pasa a la confirmación.
+    // Simula el pago,limpia el carrito y pasa a la confirmación.
     store.clearCart();
 
     Navigator.pushReplacement(

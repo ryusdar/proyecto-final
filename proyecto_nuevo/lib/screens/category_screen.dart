@@ -5,8 +5,7 @@ import '../core/vynta_colors.dart';
 import '../widgets/build_footer.dart';
 
 /// Listado de productos de una categoría.
-/// MVP sin backend: muestra los productos del home (mock), encabezado por
-/// categoría. Con backend se filtraría por la categoría real.
+
 class CategoryScreen extends StatelessWidget {
   final VyntaCategory category;
   const CategoryScreen({super.key, required this.category});
@@ -88,7 +87,7 @@ class CategoryScreen extends StatelessWidget {
     );
   }
 
-  /// Card de producto reutilizado (imagen + nombre + precio).
+  /// Card de producto reutilizado de imagen + nombre + precio
   Widget _productCard(BuildContext context, VyntaProduct p) {
     return GestureDetector(
       onTap: () {

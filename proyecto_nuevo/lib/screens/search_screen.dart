@@ -5,7 +5,7 @@ import '../core/vynta_colors.dart';
 import '../widgets/build_footer.dart';
 
 /// Pantalla de búsqueda de productos.
-/// Filtra HomeScreen.products por nombre en vivo conforme se escribe.
+/// Filtra HomeScreen.products por nombre
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 

@@ -4,13 +4,13 @@ import 'product_detail_screen.dart';
 import '../core/vynta_colors.dart';
 import '../widgets/build_footer.dart';
 
-/// Perfil del vendedor (artesano) que publicó un producto.
-/// Es un mock: se deriva del producto que se abre desde el detalle.
+/// Perfil del vendedor que publicó un producto.
+
 class SellerProfileScreen extends StatelessWidget {
   final VyntaProduct product;
   const SellerProfileScreen({super.key, required this.product});
 
-  /// Nombre del vendedor derivado del taller (mock).
+  /// Nombre del vendedor
   String get _sellerName => 'Artesano ${product.name.split(' ').first}';
 
   @override
@@ -24,7 +24,7 @@ class SellerProfileScreen extends StatelessWidget {
           color: VyntaColors.contentGrey,
           child: Column(
             children: [
-              // Header del vendedor — morado degradado (brand).
+              // Header del vendedor
               Container(
                 width: double.infinity,
                 height: 260,
@@ -181,7 +181,7 @@ class SellerProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Grid de productos del vendedor (reutiliza los del home)
+                      // Grid de productos del vendedor
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -212,8 +212,8 @@ class SellerProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Productos del vendedor: mock, todos los del home salvo el "actual" se
-  /// muestran como del mismo taller. En un MVP con backend se filtraría por vendedor.
+  /// Productos del vendedor
+
   List<VyntaProduct> _sellerProducts() {
     final all = HomeScreen.products;
     // Muestra un subconjunto representativo (hasta 4) incluyendo el actual.

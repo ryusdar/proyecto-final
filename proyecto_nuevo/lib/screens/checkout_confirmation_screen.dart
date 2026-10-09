@@ -59,16 +59,6 @@ class CheckoutConfirmationScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                const Text(
-                  'El vendedor te va a contactar para coordinar\n la entrega. ¡Gracias por comprar artesanal!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    height: 1.5,
-                  ),
-                ),
-
                 const SizedBox(height: 36),
 
                 SizedBox(
@@ -82,7 +72,7 @@ class CheckoutConfirmationScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      // Volver al shell (inicio), limpia la pila.
+                      // Volver al inicio y limpia
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
                           builder: (context) => const MainShell(),

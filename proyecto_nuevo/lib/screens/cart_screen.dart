@@ -5,7 +5,7 @@ import '../core/vynta_store.dart';
 import '../widgets/build_footer.dart';
 
 class CartScreen extends StatelessWidget {
-  /// Si es [false] (usado como tab del shell) no muestra el botón de volver.
+  /// Si es falso no muestra el botón de volver.
   final bool showBack;
   const CartScreen({super.key, this.showBack = true});
 
@@ -64,7 +64,7 @@ class CartScreen extends StatelessWidget {
                     color: VyntaColors.navTeal,
                     child: Row(
                       children: [
-                        // Botón volver (solo si no es tab del shell)
+                        // Botón volver
                         if (showBack)
                           IconButton(
                             onPressed: () => Navigator.pop(context),

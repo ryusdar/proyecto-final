@@ -6,7 +6,7 @@ import '../core/vynta_store.dart';
 import '../widgets/build_footer.dart';
 
 class FavoritesScreen extends StatelessWidget {
-  /// Si es [false] (usado como tab del shell) no muestra el botón de volver.
+  /// Si es falso no muestra el botón de volver.
   final bool showBack;
   const FavoritesScreen({super.key, this.showBack = true});
 

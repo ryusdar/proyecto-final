@@ -6,13 +6,9 @@ import 'profile_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/vynta_store.dart';
 
-/// Shell principal de la app (accesible una vez que el usuario inició sesión).
-/// Mantiene una barra de navegación inferior persistente con las 4 secciones
-/// principales: Home, Carrito, Favoritos y Perfil.
-///
 /// Usa [IndexedStack] para conservar el estado de cada pestaña al cambiar
 /// de una a otra. Las pantallas de detalle (producto, categoría, búsqueda,
-/// checkout, publicación, etc.) se abren por encima de este shell.
+/// checkout, publicación, etc.)
 class MainShell extends StatefulWidget {
   /// Índice de la pestaña inicial (0 = Home).
   final int initialIndex;
@@ -45,7 +41,7 @@ class _MainShellState extends State<MainShell> {
           ProfileScreen(showBack: false),
         ],
       ),
-      // Barra de navegación inferior persistente (accent turquesa el activo).
+      // Barra de navegación inferior
       bottomNavigationBar: ListenableBuilder(
         listenable: VyntaStore.instance,
         builder: (context, _) {
@@ -95,7 +91,7 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-/// Ícono de pestaña con badge de contador (carrito/favoritos).
+/// Ícono de pestaña con badge de contador de carrito/favoritos
 class _ShellIcon extends StatelessWidget {
   final IconData icon;
   final int badge;

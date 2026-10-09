@@ -8,10 +8,8 @@ class CartItem {
   CartItem(this.product, this.quantity);
 }
 
-/// Estado global de la app (mock, sin backend).
-/// Carrito y favoritos vividos en memoria mientras dura la sesión.
-/// Es un ChangeNotifier para que las pantallas reaccionen a los cambios
-/// (Listener / ListenableBuilder), sin necesidad de agregar paquetes.
+/// Carrito y favoritos en memoria mientras dura la sesión.
+
 class VyntaStore extends ChangeNotifier {
   VyntaStore._();
   static final VyntaStore instance = VyntaStore._();
@@ -26,7 +24,7 @@ class VyntaStore extends ChangeNotifier {
 
   int get cartCount => _cart.fold(0, (sum, item) => sum + item.quantity);
 
-  /// Subtotal en texto (moneda simulada).
+  /// Subtotal en texto
   String get cartSubtotal {
     final total = _cart.fold<int>(
       0,
@@ -90,7 +88,7 @@ class VyntaStore extends ChangeNotifier {
   List<VyntaProduct> get publications => List.unmodifiable(_publications);
   int get publicationsCount => _publications.length;
 
-  /// Registra un producto publicado por el artesano (mock, en memoria).
+  /// Registra un producto publicado por el artesano
   void publishProduct(VyntaProduct p) {
     _publications.add(p);
     notifyListeners();
@@ -98,13 +96,13 @@ class VyntaStore extends ChangeNotifier {
 
   // ------- Helpers de precio (dato mock "$ 8.500" -> int) -------
 
-  /// Convierte un precio en texto ("$ 8.500") a un int (8500).
+  /// Convierte un precio en texto
   int priceToInt(String price) {
     final digits = price.replaceAll(RegExp(r'[^\d]'), '');
     return int.tryParse(digits) ?? 0;
   }
 
-  /// Formatea un entero a la moneda simulada de la app ("$ 12.500").
+  /// Formatea un entero a la moneda
   String formatPrice(int amount) => _formatPrice(amount);
 
   int _priceToInt(String price) {

@@ -5,7 +5,7 @@ import '../core/vynta_colors.dart';
 import '../widgets/build_footer.dart';
 
 class ProfileScreen extends StatelessWidget {
-  /// Si es [false] (usado como tab del shell) no muestra el botón de volver.
+  /// Si es falso  no muestra el botón de volver.
   final bool showBack;
   const ProfileScreen({super.key, this.showBack = true});
 
@@ -19,7 +19,7 @@ class ProfileScreen extends StatelessWidget {
           color: VyntaColors.contentGrey,
           child: Column(
             children: [
-              // Header de perfil — turquesa (accent) según guía de estilo.
+              // Header de perfil
               Container(
                 width: double.infinity,
                 height: 230,

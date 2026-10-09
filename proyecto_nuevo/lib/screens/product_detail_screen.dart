@@ -21,7 +21,7 @@ class ProductDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Imagen del producto con bordes redondeados (estilo referencia)
+              // Imagen del producto con bordes redondeados
               Stack(
                 children: [
                   Container(
@@ -110,7 +110,7 @@ class ProductDetailScreen extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    // Rating simulado
+                    // Rating
                     const Row(
                       children: [
                         Icon(Icons.star, size: 20, color: Color(0xFFF5A623)),

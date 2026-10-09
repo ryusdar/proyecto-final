@@ -5,8 +5,8 @@ import '../core/vynta_colors.dart';
 import '../core/vynta_store.dart';
 import '../widgets/build_footer.dart';
 
-/// Formulario de publicación de un producto (lado artesano).
-/// MVP: los datos se guardan en el store (en memoria) y se confirma.
+/// Formulario de publicación de un producto artesanal.
+
 class PublishScreen extends StatefulWidget {
   const PublishScreen({super.key});
 
@@ -44,7 +44,7 @@ class _PublishScreenState extends State<PublishScreen> {
 
     final name = _nameController.text.trim();
     final priceText = _priceController.text.trim();
-    // Formatea el precio a "$ X.XXX" para integridad con el catálogo.
+    // Formatea el precio
     final numeric =
         int.tryParse(priceText.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
     final price = VyntaStore.instance.formatPrice(numeric);
@@ -72,7 +72,7 @@ class _PublishScreenState extends State<PublishScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Encabezado — morado (brand, lado artesano).
+              // Encabezado de artesano
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(4, 8, 18, 14),
@@ -113,7 +113,7 @@ class _PublishScreenState extends State<PublishScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Foto (mock)
+                        // Foto
                         Center(
                           child: Container(
                             width: 120,

@@ -38,7 +38,6 @@ class HomeScreen extends StatelessWidget {
     VyntaProduct("Cuadro tejido", "\$ 9.800", Icons.image),
   ];
 
-  /// Barra de búsqueda superior — color de navegación (teal), unificado.
   /// Al tocarla abre la pantalla de Búsqueda completa.
   Widget _searchBar(BuildContext context) {
     return Container(
@@ -90,7 +89,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// Card de categoría (icono + nombre), estilo tile de referencia.
+  /// Card de categoría y estilo de referencia.
   Widget _categoryCard(BuildContext context, VyntaCategory c) {
     return GestureDetector(
       onTap: () {
@@ -131,7 +130,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// Card de producto en grid (imagen + nombre + precio), estilo referencia.
+  /// Card de producto imagen + nombre + precio
   /// Al tocarla abre el Detalle de producto.
   Widget _productCard(BuildContext context, VyntaProduct p) {
     return GestureDetector(
@@ -380,7 +379,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Pie de versión (oscuro sobre fondo claro)
+              // Pie (oscuro sobre fondo claro)
               const Padding(
                 padding: EdgeInsets.only(bottom: 4),
                 child: BuildFooter(color: Colors.black45),

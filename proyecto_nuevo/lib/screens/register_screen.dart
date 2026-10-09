@@ -48,8 +48,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _register() {
-    // Lógica simulada: solo navega al Home tras "registrarse".
-    // Las validaciones reales (campos no vacíos) se agregan luego con backend.
+    // solo navega al Home tras "registrarse".
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -93,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const Text(
-                    "Unite a Vynta y mostrá tus manualidades",
+                    "Unite a Vynta y mostrá tus creaciones",
                     style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(height: 26),
