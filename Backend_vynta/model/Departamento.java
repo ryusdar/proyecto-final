@@ -3,6 +3,8 @@ package com.Backend_vynta.model;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.Backend_vynta.model.Provincia;
+import com.Backend_vynta.model.Ubicacion;
 
 @Entity
 @Table(name = "departamento")

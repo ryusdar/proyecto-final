@@ -3,6 +3,10 @@ package com.Backend_vynta.model;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.Backend_vynta.model.Usuario;
+import com.Backend_vynta.model.Favorito;
+import com.Backend_vynta.model.MetodoPagoComprador;
+import com.Backend_vynta.model.Pedido;
 
 @Entity
 @Table(name = "compradores")

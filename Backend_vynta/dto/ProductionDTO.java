@@ -4,20 +4,20 @@ import com.Backend_vynta.model.EstadoProducto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class ProductoDTO {
+public class ProductionDTO {
 
     private Long id;
     private Long vendedorId;
     private Long categoriaId;
     private String nombre;
-    private String descripcion;
+    private String description;
     private BigDecimal precio;
     private Integer stock;
     private String imagenUrl;
-    private EstadoProducto estado;
+    private EstadoProduction estado;
     private LocalDateTime creadoEn;
 
-    public ProductoDTO() {
+    public ProductionDTO() {
     }
 
     public Long getId() {
@@ -52,12 +52,12 @@ public class ProductoDTO {
         this.nombre = nombre;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public BigDecimal getPrecio() {
@@ -84,11 +84,11 @@ public class ProductoDTO {
         this.imagenUrl = imagenUrl;
     }
 
-    public EstadoProducto getEstado() {
+    public EstadoProduction getEstado() {
         return estado;
     }
 
-    public void setEstado(EstadoProducto estado) {
+    public void setEstado(EstadoProduction estado) {
         this.estado = estado;
     }
 

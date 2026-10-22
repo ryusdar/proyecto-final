@@ -2,7 +2,8 @@ package com.Backend_vynta.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
+import com.Backend_vynta.model.Comprador; 
+import com.Backend_vynta.model.TipoPago; 
 @Entity
 @Table(name = "metodos_pago_comprador")
 public class MetodoPagoComprador {

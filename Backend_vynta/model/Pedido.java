@@ -5,6 +5,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.Backend_vynta.model.Comprador; 
+import com.Backend_vynta.model.TipoPago; 
+import com.Backend_vynta.model.MetodoPagoComprador;
+import com.Backend_vynta.model.EstadoPedido;
+import com.Backend_vynta.model.PedidoItem;
 
 @Entity
 @Table(name = "pedidos")

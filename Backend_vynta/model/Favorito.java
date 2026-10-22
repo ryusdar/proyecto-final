@@ -2,6 +2,9 @@ package com.Backend_vynta.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.Backend_vynta.model.FavoritoId;
+import com.Backend_vynta.model.Comprador;  
+import com.Backend_vynta.model.Producto;
 
 @Entity
 @Table(name = "favoritos")

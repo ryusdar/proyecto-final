@@ -3,7 +3,7 @@ package com.Backend_vynta.model;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.Backend_vynta.model.Producto;
 @Entity
 @Table(name = "categorias")
 public class Categoria {
@@ -11,7 +11,7 @@ public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column 
     private String nombre;
 
     @OneToMany(mappedBy = "categoria")
