@@ -1,26 +1,12 @@
 package com.Backend_vynta.dto;
 
-public class CategoriaDTO {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-    private Long id;
-    private String nombre;
+public record CategoriaDTO(
+        Long id,
 
-    public CategoriaDTO() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-}
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(max = 50, message = "Máximo 50 caracteres")
+        String nombre
+) {}

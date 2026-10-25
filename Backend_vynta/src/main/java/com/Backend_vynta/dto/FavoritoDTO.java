@@ -2,36 +2,14 @@ package com.Backend_vynta.dto;
 
 import java.time.LocalDateTime;
 
-public class FavoritoDTO {
+import jakarta.validation.constraints.NotNull;
 
-    private Long compradorId;
-    private Long productoId;
-    private LocalDateTime creadoEn;
+public record FavoritoDTO(
+        @NotNull(message = "El comprador es obligatorio")
+        Long compradorId,
 
-    public FavoritoDTO() {
-    }
+        @NotNull(message = "El producto es obligatorio")
+        Long productoId,
 
-    public Long getCompradorId() {
-        return compradorId;
-    }
-
-    public void setCompradorId(Long compradorId) {
-        this.compradorId = compradorId;
-    }
-
-    public Long getProductoId() {
-        return productoId;
-    }
-
-    public void setProductoId(Long productoId) {
-        this.productoId = productoId;
-    }
-
-    public LocalDateTime getCreadoEn() {
-        return creadoEn;
-    }
-
-    public void setCreadoEn(LocalDateTime creadoEn) {
-        this.creadoEn = creadoEn;
-    }
-}
+        LocalDateTime creadoEn
+) {}

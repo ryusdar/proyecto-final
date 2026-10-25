@@ -1,44 +1,17 @@
 package com.Backend_vynta.dto;
 
-public class TipoPagoDTO {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-    private Long id;
-    private String codigo;
-    private String nombre;
-    private String descripcion;
+public record TipoPagoDTO(
+        Long id,
 
-    public TipoPagoDTO() {
-    }
+        @NotBlank(message = "El código es obligatorio")
+        @Size(max = 30, message = "El código no puede superar los 30 caracteres")
+        String codigo,
 
-    public Long getId() {
-        return id;
-    }
+        @NotBlank(message = "El nombre es obligatorio")
+        String nombre,
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCodigo() {
-        return codigo;
-    }
-
-    public void setCodigo(String codigo) {
-        this.codigo = codigo;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-}
+        String descripcion
+) {}

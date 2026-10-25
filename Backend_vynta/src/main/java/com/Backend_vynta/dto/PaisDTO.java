@@ -1,35 +1,12 @@
 package com.Backend_vynta.dto;
 
-public class PaisDTO {
+import jakarta.validation.constraints.NotBlank;
 
-    private Long idPais;
-    private String nombre;
-    private Boolean activo;
+public record PaisDTO(
+        Long idPais,
 
-    public PaisDTO() {
-    }
+        @NotBlank(message = "El nombre es obligatorio")
+        String nombre,
 
-    public Long getIdPais() {
-        return idPais;
-    }
-
-    public void setIdPais(Long idPais) {
-        this.idPais = idPais;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public Boolean getActivo() {
-        return activo;
-    }
-
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
-    }
-}
+        Boolean activo
+) {}

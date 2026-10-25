@@ -1,35 +1,12 @@
 package com.Backend_vynta.dto;
 
-public class CompradorDTO {
+import jakarta.validation.constraints.NotNull;
 
-    private Long idComprador;
-    private Long usuarioId;
-    private Boolean activo;
+public record CompradorDTO(
+        Long idComprador,
 
-    public CompradorDTO() {
-    }
+        @NotNull(message = "El usuario es obligatorio")
+        Long usuarioId,
 
-    public Long getIdComprador() {
-        return idComprador;
-    }
-
-    public void setIdComprador(Long idComprador) {
-        this.idComprador = idComprador;
-    }
-
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
-
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
-    }
-
-    public Boolean getActivo() {
-        return activo;
-    }
-
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
-    }
-}
+        Boolean activo
+) {}

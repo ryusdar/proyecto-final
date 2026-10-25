@@ -32,7 +32,7 @@ public class Pedido {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoPedido estado = EstadoPedido.pendiente;
+    private EstadoPedido estado = EstadoPedido.PENDIENTE;
 
     @Column(name = "creado_en", nullable = false)
     private LocalDateTime creadoEn;

@@ -1,53 +1,20 @@
 package com.Backend_vynta.dto;
 
-public class VendedorDTO {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-    private Long idVendedor;
-    private Long usuarioId;
-    private String nombreTienda;
-    private String descripcion;
-    private Boolean activo;
+public record VendedorDTO(
+        Long idVendedor,
 
-    public VendedorDTO() {
-    }
+        @NotNull(message = "El usuario es obligatorio")
+        Long usuarioId,
 
-    public Long getIdVendedor() {
-        return idVendedor;
-    }
+        @NotBlank(message = "El nombre de la tienda es obligatorio")
+        @Size(max = 100, message = "El nombre de la tienda no puede superar los 100 caracteres")
+        String nombreTienda,
 
-    public void setIdVendedor(Long idVendedor) {
-        this.idVendedor = idVendedor;
-    }
+        String descripcion,
 
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
-
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
-    }
-
-    public String getNombreTienda() {
-        return nombreTienda;
-    }
-
-    public void setNombreTienda(String nombreTienda) {
-        this.nombreTienda = nombreTienda;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public Boolean getActivo() {
-        return activo;
-    }
-
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
-    }
-}
+        Boolean activo
+) {}

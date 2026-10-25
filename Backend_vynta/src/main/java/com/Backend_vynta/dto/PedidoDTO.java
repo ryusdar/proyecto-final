@@ -1,75 +1,29 @@
 package com.Backend_vynta.dto;
 
-import com.Backend_vynta.model.EstadoPedido;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class PedidoDTO {
+import com.Backend_vynta.model.EstadoPedido;
 
-    private Long id;
-    private Long compradorId;
-    private Long tipoPagoId;
-    private Long metodoPagoCompradorId;
-    private BigDecimal total;
-    private EstadoPedido estado;
-    private LocalDateTime creadoEn;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-    public PedidoDTO() {
-    }
+public record PedidoDTO(
+        Long id,
 
-    public Long getId() {
-        return id;
-    }
+        @NotNull(message = "El comprador es obligatorio")
+        Long compradorId,
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+        @NotNull(message = "El tipo de pago es obligatorio")
+        Long tipoPagoId,
 
-    public Long getCompradorId() {
-        return compradorId;
-    }
+        Long metodoPagoCompradorId,
 
-    public void setCompradorId(Long compradorId) {
-        this.compradorId = compradorId;
-    }
+        @NotNull(message = "El total es obligatorio")
+        @Positive(message = "El total debe ser mayor a 0")
+        BigDecimal total,
 
-    public Long getTipoPagoId() {
-        return tipoPagoId;
-    }
+        EstadoPedido estado,
 
-    public void setTipoPagoId(Long tipoPagoId) {
-        this.tipoPagoId = tipoPagoId;
-    }
-
-    public Long getMetodoPagoCompradorId() {
-        return metodoPagoCompradorId;
-    }
-
-    public void setMetodoPagoCompradorId(Long metodoPagoCompradorId) {
-        this.metodoPagoCompradorId = metodoPagoCompradorId;
-    }
-
-    public BigDecimal getTotal() {
-        return total;
-    }
-
-    public void setTotal(BigDecimal total) {
-        this.total = total;
-    }
-
-    public EstadoPedido getEstado() {
-        return estado;
-    }
-
-    public void setEstado(EstadoPedido estado) {
-        this.estado = estado;
-    }
-
-    public LocalDateTime getCreadoEn() {
-        return creadoEn;
-    }
-
-    public void setCreadoEn(LocalDateTime creadoEn) {
-        this.creadoEn = creadoEn;
-    }
-}
+        LocalDateTime creadoEn
+) {}

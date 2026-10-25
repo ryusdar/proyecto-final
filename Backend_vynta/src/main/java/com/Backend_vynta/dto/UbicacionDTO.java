@@ -1,71 +1,24 @@
 package com.Backend_vynta.dto;
 
-public class UbicacionDTO {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-    private Long idUbicacion;
-    private Long usuarioId;
-    private String calle;
-    private String numero;
-    private String codigoPostal;
-    private Long departamentoId;
-    private Boolean activo;
+public record UbicacionDTO(
+        Long idUbicacion,
 
-    public UbicacionDTO() {
-    }
+        @NotNull(message = "El usuario es obligatorio")
+        Long usuarioId,
 
-    public Long getIdUbicacion() {
-        return idUbicacion;
-    }
+        @NotBlank(message = "La calle es obligatoria")
+        String calle,
 
-    public void setIdUbicacion(Long idUbicacion) {
-        this.idUbicacion = idUbicacion;
-    }
+        @NotBlank(message = "El número es obligatorio")
+        String numero,
 
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
+        String codigoPostal,
 
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
-    }
+        @NotNull(message = "El departamento es obligatorio")
+        Long departamentoId,
 
-    public String getCalle() {
-        return calle;
-    }
-
-    public void setCalle(String calle) {
-        this.calle = calle;
-    }
-
-    public String getNumero() {
-        return numero;
-    }
-
-    public void setNumero(String numero) {
-        this.numero = numero;
-    }
-
-    public String getCodigoPostal() {
-        return codigoPostal;
-    }
-
-    public void setCodigoPostal(String codigoPostal) {
-        this.codigoPostal = codigoPostal;
-    }
-
-    public Long getDepartamentoId() {
-        return departamentoId;
-    }
-
-    public void setDepartamentoId(Long departamentoId) {
-        this.departamentoId = departamentoId;
-    }
-
-    public Boolean getActivo() {
-        return activo;
-    }
-
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
-    }
-}
+        Boolean activo
+) {}

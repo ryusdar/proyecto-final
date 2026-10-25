@@ -2,55 +2,20 @@ package com.Backend_vynta.dto;
 
 import java.math.BigDecimal;
 
-public class PedidoItemDTO {
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
-    private Long id;
-    private Long pedidoId;
-    private Long productoId;
-    private Integer cantidad;
-    private BigDecimal precioUnitario;
+public record PedidoItemDTO(
+        Long id,
 
+        Long pedidoId,
 
-    public PedidoItemDTO() {
-    }
+        @NotNull(message = "El producto es obligatorio")
+        Long productoId,
 
-    public Long getId() {
-        return id;
-    }
+        @NotNull(message = "La cantidad es obligatoria")
+        @Positive(message = "La cantidad debe ser mayor a 0")
+        Integer cantidad,
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getPedidoId() {
-        return pedidoId;
-    }
-
-    public void setPedidoId(Long pedidoId) {
-        this.pedidoId = pedidoId;
-    }
-
-    public Long getProductoId() {
-        return productoId;
-    }
-
-    public void setProductoId(Long productoId) {
-        this.productoId = productoId;
-    }
-
-    public Integer getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(Integer cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    public BigDecimal getPrecioUnitario() {
-        return precioUnitario;
-    }
-
-    public void setPrecioUnitario(BigDecimal precioUnitario) {
-        this.precioUnitario = precioUnitario;
-    }
-}
+        BigDecimal precioUnitario
+) {}

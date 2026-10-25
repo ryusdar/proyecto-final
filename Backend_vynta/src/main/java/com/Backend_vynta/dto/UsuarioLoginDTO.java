@@ -1,26 +1,15 @@
 package com.Backend_vynta.dto;
 
-public class UsuarioLoginDTO {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
-    private String email;
-    private String password;
+public record UsuarioLoginDTO(
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "El email no es válido")
+        String email,
+        
+        @NotBlank(message = "La contraseña es obligatoria")
+        String password
+        ) {
 
-    public UsuarioLoginDTO() {
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }

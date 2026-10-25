@@ -1,44 +1,16 @@
 package com.Backend_vynta.dto;
 
-public class ProvinciaDTO {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-    private Long idProvincia;
-    private String nombre;
-    private Long paisId;
-    private Boolean activo;
+public record ProvinciaDTO(
+        Long idProvincia,
 
-    public ProvinciaDTO() {
-    }
+        @NotBlank(message = "El nombre es obligatorio")
+        String nombre,
 
-    public Long getIdProvincia() {
-        return idProvincia;
-    }
+        @NotNull(message = "El país es obligatorio")
+        Long paisId,
 
-    public void setIdProvincia(Long idProvincia) {
-        this.idProvincia = idProvincia;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public Long getPaisId() {
-        return paisId;
-    }
-
-    public void setPaisId(Long paisId) {
-        this.paisId = paisId;
-    }
-
-    public Boolean getActivo() {
-        return activo;
-    }
-
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
-    }
-}
+        Boolean activo
+) {}

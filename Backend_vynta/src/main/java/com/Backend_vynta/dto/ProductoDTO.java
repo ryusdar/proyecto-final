@@ -1,102 +1,42 @@
 package com.Backend_vynta.dto;
 
-import com.Backend_vynta.model.EstadoProducto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class ProductoDTO {
+import com.Backend_vynta.model.EstadoProducto;
 
-    private Long id;
-    private Long vendedorId;
-    private Long categoriaId;
-    private String nombre;
-    private String descripcion;
-    private BigDecimal precio;
-    private Integer stock;
-    private String imagenUrl;
-    private EstadoProducto estado;
-    private LocalDateTime creadoEn;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
-    public ProductoDTO() {
-    }
+public record ProductoDTO(
+        Long id,
 
-    public Long getId() {
-        return id;
-    }
+        @NotNull(message = "El vendedor es obligatorio")
+        Long vendedorId,
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+        @NotNull(message = "La categoría es obligatoria")
+        Long categoriaId,
 
-    public Long getVendedorId() {
-        return vendedorId;
-    }
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(max = 150, message = "El nombre no puede superar los 150 caracteres")
+        String nombre,
 
-    public void setVendedorId(Long vendedorId) {
-        this.vendedorId = vendedorId;
-    }
+        String descripcion,
 
-    public Long getCategoriaId() {
-        return categoriaId;
-    }
+        @NotNull(message = "El precio es obligatorio")
+        @Positive(message = "El precio debe ser mayor a 0")
+        BigDecimal precio,
 
-    public void setCategoriaId(Long categoriaId) {
-        this.categoriaId = categoriaId;
-    }
+        @NotNull(message = "El stock es obligatorio")
+        @PositiveOrZero(message = "El stock no puede ser negativo")
+        Integer stock,
 
-    public String getNombre() {
-        return nombre;
-    }
+        String imagenUrl,
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+        EstadoProducto estado,
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public BigDecimal getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(BigDecimal precio) {
-        this.precio = precio;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public String getImagenUrl() {
-        return imagenUrl;
-    }
-
-    public void setImagenUrl(String imagenUrl) {
-        this.imagenUrl = imagenUrl;
-    }
-
-    public EstadoProducto getEstado() {
-        return estado;
-    }
-
-    public void setEstado(EstadoProducto estado) {
-        this.estado = estado;
-    }
-
-    public LocalDateTime getCreadoEn() {
-        return creadoEn;
-    }
-
-    public void setCreadoEn(LocalDateTime creadoEn) {
-        this.creadoEn = creadoEn;
-    }
-}
+        LocalDateTime creadoEn
+) {}
