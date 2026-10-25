@@ -1,5 +1,6 @@
 package com.Backend_vynta.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -23,10 +24,7 @@ public class PedidoService {
     private final TipoPagoRepository tipoPagoRepository;
     private final MetodoPagoCompradorRepository metodoPagoRepository;
 
-    public PedidoService(PedidoRepository pedidoRepository,
-                         CompradorRepository compradorRepository,
-                         TipoPagoRepository tipoPagoRepository,
-                         MetodoPagoCompradorRepository metodoPagoRepository) {
+    public PedidoService(PedidoRepository pedidoRepository,CompradorRepository compradorRepository,TipoPagoRepository tipoPagoRepository,MetodoPagoCompradorRepository metodoPagoRepository) {
         this.pedidoRepository = pedidoRepository;
         this.compradorRepository = compradorRepository;
         this.tipoPagoRepository = tipoPagoRepository;
@@ -52,7 +50,7 @@ public class PedidoService {
         Pedido p = new Pedido();
         p.setComprador(comprador);
         p.setTipoPago(tipoPago);
-        p.setTotal(dto.total());
+        p.setTotal(BigDecimal.ZERO);
         p.setEstado(EstadoPedido.PENDIENTE);
 
         // opcional: solo si se paga con una tarjeta guardada
