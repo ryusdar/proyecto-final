@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'main_shell.dart';
+import '../widgets/app_frame.dart';
 import '../widgets/vynta_logo.dart';
 import '../core/vynta_colors.dart';
 import '../core/api_client.dart';
@@ -125,212 +126,218 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: VyntaColors.brandPurple,
-      body: Center(
-        child: Container(
-          width: 390,
-          height: double.infinity,
-          color: VyntaColors.brandPurple,
-          child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 38),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Botón volver
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: VyntaColors.cardWhite,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  Center(child: VyntaLogo(width: 120)),
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    "Crear cuenta",
-                    style: TextStyle(
-                      color: VyntaColors.cardWhite,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    "Unite a Vynta y mostrá tus creaciones",
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                  const SizedBox(height: 26),
-
-                  const Text(
-                    "Nombre",
-                    style: TextStyle(
-                      color: VyntaColors.cardWhite,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _nameController,
-                    style: const TextStyle(color: VyntaColors.cardWhite),
-                    decoration: _inputDecoration(
-                      'Tu nombre',
-                      Icons.person_outline,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Correo electrónico",
-                    style: TextStyle(
-                      color: VyntaColors.cardWhite,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(color: VyntaColors.cardWhite),
-                    decoration: _inputDecoration(
-                      'usuario@email.com',
-                      Icons.email_outlined,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Contraseña",
-                    style: TextStyle(
-                      color: VyntaColors.cardWhite,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    style: const TextStyle(color: VyntaColors.cardWhite),
-                    decoration:
-                        _inputDecoration(
-                          'Mínimo 8 caracteres',
-                          Icons.lock_outline,
-                        ).copyWith(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: VyntaColors.cardWhite,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
-                          ),
-                        ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Confirmar contraseña",
-                    style: TextStyle(
-                      color: VyntaColors.cardWhite,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _confirmController,
-                    obscureText: _obscureConfirm,
-                    onSubmitted: (_) => _loading ? null : _register(),
-                    style: const TextStyle(color: VyntaColors.cardWhite),
-                    decoration:
-                        _inputDecoration(
-                          'Repetí tu contraseña',
-                          Icons.lock_outline,
-                        ).copyWith(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirm
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: VyntaColors.cardWhite,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscureConfirm = !_obscureConfirm,
-                            ),
-                          ),
-                        ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: VyntaColors.accentTurquoise,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            VyntaColors.radius,
-                          ),
+      body: AppFrame(
+        color: VyntaColors.brandPurple,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final hPad = constraints.maxWidth < 360 ? 24.0 : 38.0;
+              return SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: hPad),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Botón volver
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: VyntaColors.cardWhite,
                         ),
                       ),
-                      onPressed: _loading ? null : _register,
-                      child: _loading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: VyntaColors.ink,
-                              ),
-                            )
-                          : const Text(
-                              "Registrarme",
-                              style: TextStyle(
-                                color: VyntaColors.ink,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                      const SizedBox(height: 4),
+
+                      Center(child: VyntaLogo(width: 120)),
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        "Crear cuenta",
+                        style: TextStyle(
+                          color: VyntaColors.cardWhite,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Text(
+                        "Unite a Vynta y mostrá tus creaciones",
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                      const SizedBox(height: 26),
+
+                      const Text(
+                        "Nombre",
+                        style: TextStyle(
+                          color: VyntaColors.cardWhite,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _nameController,
+                        style: const TextStyle(color: VyntaColors.cardWhite),
+                        decoration: _inputDecoration(
+                          'Tu nombre',
+                          Icons.person_outline,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        "Correo electrónico",
+                        style: TextStyle(
+                          color: VyntaColors.cardWhite,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        style: const TextStyle(color: VyntaColors.cardWhite),
+                        decoration: _inputDecoration(
+                          'usuario@email.com',
+                          Icons.email_outlined,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        "Contraseña",
+                        style: TextStyle(
+                          color: VyntaColors.cardWhite,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        style: const TextStyle(color: VyntaColors.cardWhite),
+                        decoration:
+                            _inputDecoration(
+                              'Mínimo 8 caracteres',
+                              Icons.lock_outline,
+                            ).copyWith(
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: VyntaColors.cardWhite,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
                               ),
                             ),
-                    ),
-                  ),
+                      ),
 
-                  const SizedBox(height: 22),
+                      const SizedBox(height: 20),
 
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "¿Ya tenés cuenta?",
-                          style: TextStyle(color: Colors.white),
+                      const Text(
+                        "Confirmar contraseña",
+                        style: TextStyle(
+                          color: VyntaColors.cardWhite,
+                          fontWeight: FontWeight.bold,
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text(
-                            "Iniciar sesión",
-                            style: TextStyle(
-                              color: VyntaColors.cardWhite,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                              decorationColor: VyntaColors.cardWhite,
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _confirmController,
+                        obscureText: _obscureConfirm,
+                        onSubmitted: (_) => _loading ? null : _register(),
+                        style: const TextStyle(color: VyntaColors.cardWhite),
+                        decoration:
+                            _inputDecoration(
+                              'Repetí tu contraseña',
+                              Icons.lock_outline,
+                            ).copyWith(
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirm
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: VyntaColors.cardWhite,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscureConfirm = !_obscureConfirm,
+                                ),
+                              ),
+                            ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: VyntaColors.accentTurquoise,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                VyntaColors.radius,
+                              ),
                             ),
                           ),
+                          onPressed: _loading ? null : _register,
+                          child: _loading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: VyntaColors.ink,
+                                  ),
+                                )
+                              : const Text(
+                                  "Registrarme",
+                                  style: TextStyle(
+                                    color: VyntaColors.ink,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
                         ),
-                      ],
-                    ),
+                      ),
+
+                      const SizedBox(height: 22),
+
+                      Center(
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            const Text(
+                              "¿Ya tenés cuenta?",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                "Iniciar sesión",
+                                style: TextStyle(
+                                  color: VyntaColors.cardWhite,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: VyntaColors.cardWhite,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),

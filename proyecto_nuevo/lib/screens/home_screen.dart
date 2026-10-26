@@ -5,6 +5,7 @@ import 'search_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/api_client.dart';
 import '../core/vynta_store.dart';
+import '../widgets/app_frame.dart';
 import '../widgets/build_footer.dart';
 
 class VyntaProduct {
@@ -133,8 +134,9 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Al tocarla abre la pantalla de Búsqueda completa.
   Widget _searchBar(BuildContext context) {
     return Container(
+      width: double.infinity,
       color: VyntaColors.navTeal,
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: VyntaColors.internalPadding,
         vertical: 14,
       ),
@@ -159,9 +161,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(width: 14),
                     Icon(Icons.search, color: Colors.grey, size: 20),
                     SizedBox(width: 10),
-                    Text(
-                      "Buscar productos…",
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    Expanded(
+                      child: Text(
+                        "Buscar productos…",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
                     ),
                   ],
                 ),
@@ -190,34 +196,40 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (context) => CategoryScreen(category: c)),
         );
       },
-      child: Column(
-        children: [
-          Container(
-            width: 62,
-            height: 62,
-            decoration: BoxDecoration(
-              color: VyntaColors.cardWhite,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+      child: SizedBox(
+        width: 72,
+        child: Column(
+          children: [
+            Container(
+              width: 62,
+              height: 62,
+              decoration: BoxDecoration(
+                color: VyntaColors.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Icon(c.icon, size: 28, color: VyntaColors.brandPurple),
             ),
-            child: Icon(c.icon, size: 28, color: VyntaColors.brandPurple),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            c.name,
-            style: const TextStyle(
-              fontSize: 11,
-              color: VyntaColors.ink,
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 8),
+            Text(
+              c.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                color: VyntaColors.ink,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -261,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -276,18 +288,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    p.price,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: VyntaColors.ink,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      p.price,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: VyntaColors.ink,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
-                    height: 36,
+                    height: 34,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: VyntaColors.accentTurquoise,
@@ -363,8 +379,8 @@ class _HomeScreenState extends State<HomeScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _products.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 200,
         childAspectRatio: 0.72,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
@@ -377,136 +393,139 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: VyntaColors.contentGrey,
-      body: Center(
-        child: Container(
-          width: 390,
-          color: VyntaColors.contentGrey,
-          child: Column(
-            children: [
-              _searchBar(context),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _load,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(VyntaColors.internalPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Banner de productos recomendados
-                        Container(
-                          width: double.infinity,
-                          height: 130,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                VyntaColors.brandPurple,
-                                Color(0xFF9C5BFF),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(
-                              VyntaColors.radius,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "Ofertas de la semana",
-                                      style: TextStyle(
-                                        color: VyntaColors.cardWhite,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      "Hasta 30% OFF en manualidades",
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: VyntaColors.accentTurquoise,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: const Text(
-                                        "Ver ofertas",
-                                        style: TextStyle(
-                                          color: VyntaColors.ink,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.volunteer_activism,
-                                size: 80,
-                                color: VyntaColors.cardWhite.withValues(
-                                  alpha: 0.85,
-                                ),
-                              ),
+      body: AppFrame(
+        color: VyntaColors.contentGrey,
+        maxWidth: 900,
+        child: Column(
+          children: [
+            _searchBar(context),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _load,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(VyntaColors.internalPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Banner de productos recomendados
+                      Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(minHeight: 130),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              VyntaColors.brandPurple,
+                              Color(0xFF9C5BFF),
                             ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            VyntaColors.radius,
                           ),
                         ),
-
-                        const SizedBox(height: 24),
-
-                        const Text(
-                          "Categorías",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: VyntaColors.ink,
-                          ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Ofertas de la semana",
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: VyntaColors.cardWhite,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    "Hasta 30% OFF en manualidades",
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: VyntaColors.accentTurquoise,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      "Ver ofertas",
+                                      style: TextStyle(
+                                        color: VyntaColors.ink,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.volunteer_activism,
+                              size: 80,
+                              color: VyntaColors.cardWhite.withValues(
+                                alpha: 0.85,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        _categoriesSection(),
+                      ),
 
-                        const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-                        const Text(
-                          "Lo más vendido",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: VyntaColors.ink,
-                          ),
+                      const Text(
+                        "Categorías",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: VyntaColors.ink,
                         ),
-                        const SizedBox(height: 12),
+                      ),
+                      const SizedBox(height: 12),
+                      _categoriesSection(),
 
-                        _productsSection(),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        "Lo más vendido",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: VyntaColors.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      _productsSection(),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
               ),
+            ),
 
-              // Pie (oscuro sobre fondo claro)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: BuildFooter(color: Colors.black45),
-              ),
-            ],
-          ),
+            // Pie (oscuro sobre fondo claro)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: BuildFooter(color: Colors.black45),
+            ),
+          ],
         ),
       ),
     );
