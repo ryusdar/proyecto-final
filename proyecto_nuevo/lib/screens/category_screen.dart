@@ -16,15 +16,6 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  // Ids de las categorías en el backend (deben coincidir con MySQL).
-  static const Map<String, int> _categoryIds = {
-    'Hogar': 1,
-    'Tecnología': 2,
-    'Herramientas': 3,
-    'Manualidades': 4,
-    'Decoración': 5,
-  };
-
   List<VyntaProduct> _products = [];
   bool _loading = true;
   String? _error;
@@ -35,13 +26,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
     _load();
   }
 
-  Future<void> _load() async {
+    Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final id = _categoryIds[widget.category.name];
+      final id = widget.category.id;
       if (id == null) {
         throw ApiException('Categoría desconocida');
       }

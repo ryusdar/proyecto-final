@@ -11,7 +11,7 @@ class VyntaProduct {
   final String name;
   final String price;
   final IconData icon;
-  final int? id; // id del producto en el backend (null en los mocks)
+  final int? id; // id del producto en el backend
   final String? description;
   final int? sellerId;
 
@@ -30,63 +30,64 @@ class VyntaProduct {
     return VyntaProduct(
       json['nombre'] as String,
       VyntaStore.instance.formatPrice(precio),
-      _iconForCategory((json['categoriaId'] as num?)?.toInt()),
+      VyntaCategory.iconForId((json['categoriaId'] as num?)?.toInt()),
       id: (json['id'] as num).toInt(),
       description: json['descripcion'] as String?,
       sellerId: (json['vendedorId'] as num?)?.toInt(),
     );
   }
-
-  static IconData _iconForCategory(int? categoriaId) {
-    switch (categoriaId) {
-      case 1:
-        return Icons.chair;
-      case 2:
-        return Icons.laptop_mac;
-      case 3:
-        return Icons.handyman;
-      case 4:
-        return Icons.palette;
-      case 5:
-        return Icons.light_mode;
-      default:
-        return Icons.inventory_2_outlined;
-    }
-  }
 }
 
 class VyntaCategory {
+  final int? id; // id de la categoría en el backend
   final String name;
   final IconData icon;
-  const VyntaCategory(this.name, this.icon);
+  const VyntaCategory(this.name, this.icon, {this.id});
+
+  // Recuerda el ícono de cada categoría para pintar los productos.
+  static final Map<int, IconData> _iconsById = {};
+
+  static IconData iconForId(int? id) =>
+      _iconsById[id] ?? Icons.inventory_2_outlined;
+
+  /// El backend no guarda íconos: se eligen por nombre.
+  static IconData iconForName(String name) {
+    switch (name.trim().toLowerCase()) {
+      case 'hogar':
+        return Icons.chair;
+      case 'tecnología':
+      case 'tecnologia':
+        return Icons.laptop_mac;
+      case 'herramientas':
+        return Icons.handyman;
+      case 'manualidades':
+        return Icons.palette;
+      case 'decoración':
+      case 'decoracion':
+        return Icons.light_mode;
+      default:
+        return Icons.category_outlined;
+    }
+  }
+
+  factory VyntaCategory.fromJson(Map<String, dynamic> json) {
+    final id = (json['id'] as num).toInt();
+    final name = json['nombre'] as String;
+    final icon = iconForName(name);
+    _iconsById[id] = icon;
+    return VyntaCategory(name, icon, id: id);
+  }
 }
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
-  static const List<VyntaCategory> categories = [
-    VyntaCategory("Hogar", Icons.chair),
-    VyntaCategory("Tecnología", Icons.laptop_mac),
-    VyntaCategory("Herramientas", Icons.handyman),
-    VyntaCategory("Manualidades", Icons.palette),
-    VyntaCategory("Decoración", Icons.light_mode),
-  ];
-
-  // Mocks: se mantienen porque otras pantallas todavía pueden usarlos.
-  static const List<VyntaProduct> products = [
-    VyntaProduct("Sillón de cuero ultra delgado", "\$ 150.000", Icons.weekend),
-    VyntaProduct("Computadora gamer", "\$ 650.000", Icons.computer),
-    VyntaProduct("Maceta artesanal", "\$ 8.500", Icons.local_florist),
-    VyntaProduct("Velas aromáticas", "\$ 4.200", Icons.local_fire_department),
-    VyntaProduct("Banquito de madera", "\$ 12.000", Icons.chair_outlined),
-    VyntaProduct("Cuadro tejido", "\$ 9.800", Icons.image),
-  ];
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<VyntaCategory> _categories = [];
   List<VyntaProduct> _products = [];
   bool _loading = true;
   String? _error;
@@ -94,22 +95,30 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _load();
   }
 
-  Future<void> _loadProducts() async {
+  Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
+      // Primero las categorías (los productos usan sus íconos).
+      final cats = await ApiClient.get('/api/categorias') as List<dynamic>;
+      final categories = cats
+          .map((e) => VyntaCategory.fromJson(e as Map<String, dynamic>))
+          .toList();
+
       final data = await ApiClient.get('/api/productos') as List<dynamic>;
-      final list = data
+      final products = data
           .map((e) => VyntaProduct.fromJson(e as Map<String, dynamic>))
           .toList();
+
       if (!mounted) return;
       setState(() {
-        _products = list;
+        _categories = categories;
+        _products = products;
         _loading = false;
       });
     } catch (e) {
@@ -304,6 +313,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _categoriesSection() {
+    if (_categories.isEmpty) {
+      return const SizedBox(
+        height: 60,
+        child: Center(child: Text("Todavía no hay categorías")),
+      );
+    }
+    return SizedBox(
+      height: 92,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _categories.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
+        itemBuilder: (_, i) => _categoryCard(context, _categories[i]),
+      ),
+    );
+  }
+
   /// Muestra cargando, error con reintento, vacío o la grilla de productos.
   Widget _productsSection() {
     if (_loading) {
@@ -320,10 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(_error!, textAlign: TextAlign.center),
               const SizedBox(height: 8),
-              TextButton(
-                onPressed: _loadProducts,
-                child: const Text("Reintentar"),
-              ),
+              TextButton(onPressed: _load, child: const Text("Reintentar")),
             ],
           ),
         ),
@@ -362,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _searchBar(context),
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _loadProducts,
+                  onRefresh: _load,
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(VyntaColors.internalPadding),
@@ -445,41 +469,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: 24),
 
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Categorías",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: VyntaColors.ink,
-                              ),
-                            ),
-                            const Text(
-                              "Ver todas",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: VyntaColors.brandPurple,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 92,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: HomeScreen.categories.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(width: 14),
-                            itemBuilder: (_, i) => _categoryCard(
-                              context,
-                              HomeScreen.categories[i],
-                            ),
+                        const Text(
+                          "Categorías",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: VyntaColors.ink,
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        _categoriesSection(),
 
                         const SizedBox(height: 24),
 

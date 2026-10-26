@@ -20,27 +20,17 @@ class _PublishScreenState extends State<PublishScreen> {
   final _priceController = TextEditingController();
   final _descController = TextEditingController();
 
-  String _selectedCategory = 'Hogar';
-  IconData _selectedIcon = Icons.weekend;
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
 
-  static const Map<String, IconData> _categories = {
-    'Hogar': Icons.chair,
-    'Tecnología': Icons.laptop_mac,
-    'Herramientas': Icons.handyman,
-    'Manualidades': Icons.palette,
-    'Decoración': Icons.light_mode,
-  };
+  List<VyntaCategory> _cats = [];
+  VyntaCategory? _selected;
 
-  // Ids de las categorías en el backend (deben coincidir con MySQL).
-  static const Map<String, int> _categoryIds = {
-    'Hogar': 1,
-    'Tecnología': 2,
-    'Herramientas': 3,
-    'Manualidades': 4,
-    'Decoración': 5,
-  };
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
 
   @override
   void dispose() {
@@ -53,6 +43,22 @@ class _PublishScreenState extends State<PublishScreen> {
   void _showMessage(String text) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final data = await ApiClient.get('/api/categorias') as List<dynamic>;
+      final cats = data
+          .map((e) => VyntaCategory.fromJson(e as Map<String, dynamic>))
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _cats = cats;
+        _selected = cats.isNotEmpty ? cats.first : null;
+      });
+    } catch (e) {
+      _showMessage('No se pudieron cargar las categorías');
+    }
   }
 
   /// Si el usuario todavía no es vendedor, lo convierte.
@@ -79,6 +85,12 @@ class _PublishScreenState extends State<PublishScreen> {
       return;
     }
 
+    final cat = _selected;
+    if (cat == null || cat.id == null) {
+      _showMessage('Elegí una categoría');
+      return;
+    }
+
     final name = _nameController.text.trim();
     final numeric =
         int.tryParse(_priceController.text.replaceAll(RegExp(r'[^\d]'), '')) ??
@@ -91,7 +103,7 @@ class _PublishScreenState extends State<PublishScreen> {
 
       final r = await ApiClient.post('/api/productos', {
         'vendedorId': userId,
-        'categoriaId': _categoryIds[_selectedCategory],
+        'categoriaId': cat.id,
         'nombre': name,
         'descripcion': _descController.text.trim(),
         'precio': numeric,
@@ -102,7 +114,7 @@ class _PublishScreenState extends State<PublishScreen> {
         VyntaProduct(
           name,
           price,
-          _selectedIcon,
+          cat.icon,
           id: (r['id'] as num).toInt(),
         ),
       );
@@ -247,24 +259,25 @@ class _PublishScreenState extends State<PublishScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedCategory,
+                        DropdownButtonFormField<VyntaCategory>(
+                          key: ValueKey(_cats.length),
+                          initialValue: _selected,
                           dropdownColor: VyntaColors.cardWhite,
                           decoration: _fieldDecoration(Icons.category_outlined),
-                          items: _categories.keys
+                          items: _cats
                               .map(
-                                (key) => DropdownMenuItem(
-                                  value: key,
+                                (c) => DropdownMenuItem(
+                                  value: c,
                                   child: Row(
                                     children: [
                                       Icon(
-                                        _categories[key],
+                                        c.icon,
                                         size: 18,
                                         color: VyntaColors.brandPurple,
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        key,
+                                        c.name,
                                         style: const TextStyle(
                                           color: VyntaColors.ink,
                                         ),
@@ -274,14 +287,7 @@ class _PublishScreenState extends State<PublishScreen> {
                                 ),
                               )
                               .toList(),
-                          onChanged: (v) {
-                            if (v != null) {
-                              setState(() {
-                                _selectedCategory = v;
-                                _selectedIcon = _categories[v]!;
-                              });
-                            }
-                          },
+                          onChanged: (v) => setState(() => _selected = v),
                         ),
                         const SizedBox(height: 16),
 
