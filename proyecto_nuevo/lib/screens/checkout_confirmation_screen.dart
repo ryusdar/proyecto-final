@@ -5,11 +5,13 @@ import '../core/vynta_colors.dart';
 class CheckoutConfirmationScreen extends StatelessWidget {
   final String total;
   final String method;
+  final int? orderId;
 
   const CheckoutConfirmationScreen({
     super.key,
     required this.total,
     required this.method,
+    this.orderId,
   });
 
   @override
@@ -58,6 +60,12 @@ class CheckoutConfirmationScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
+
+                if (orderId != null)
+                  Text(
+                    'Pedido #$orderId',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
 
                 const SizedBox(height: 36),
 

@@ -4,13 +4,47 @@ import 'cart_screen.dart';
 import 'seller_profile_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/vynta_store.dart';
+import '../core/api_client.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   final VyntaProduct product;
   const ProductDetailScreen({super.key, required this.product});
 
   @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  String? _storeName;
+
+  VyntaProduct get product => widget.product;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSeller();
+  }
+
+  Future<void> _loadSeller() async {
+    final sellerId = product.sellerId;
+    if (sellerId == null) return;
+    try {
+      final v = await ApiClient.get('/api/vendedores/$sellerId')
+          as Map<String, dynamic>;
+      if (!mounted) return;
+      setState(() => _storeName = v['nombreTienda'] as String?);
+    } catch (_) {
+      // Si falla, se queda con el texto por defecto.
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final description =
+        (product.description != null && product.description!.isNotEmpty)
+            ? product.description!
+            : '${product.name}, una creación artesanal única hecha a mano.';
+
     return Scaffold(
       backgroundColor: VyntaColors.contentGrey,
       body: Center(
@@ -153,9 +187,7 @@ class ProductDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${product.name}, una creación artesanal única hecha a mano, con '
-                      'materiales de alta calidad y terminaciones cuidadas. Cada pieza '
-                      'es original y personalizada para el comprador.',
+                      description,
                       style: const TextStyle(
                         fontSize: 14,
                         height: 1.5,
@@ -208,7 +240,8 @@ class ProductDetailScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    "Taller de ${product.name.split(' ').first}",
+                                    _storeName ??
+                                        "Taller de ${product.name.split(' ').first}",
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,

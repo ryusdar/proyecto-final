@@ -26,6 +26,8 @@ class _MainShellState extends State<MainShell> {
   void initState() {
     super.initState();
     _index = widget.initialIndex;
+    // Trae los favoritos guardados en el backend al iniciar sesión.
+    VyntaStore.instance.loadFavorites();
   }
 
   @override
@@ -49,7 +51,11 @@ class _MainShellState extends State<MainShell> {
           return NavigationBar(
             backgroundColor: VyntaColors.cardWhite,
             selectedIndex: _index,
-            onDestinationSelected: (i) => setState(() => _index = i),
+            onDestinationSelected: (i) {
+              setState(() => _index = i);
+              // Al entrar a Favoritos, refresca desde el backend.
+              if (i == 2) store.loadFavorites();
+            },
             destinations: [
               const NavigationDestination(
                 icon: Icon(Icons.home_outlined),

@@ -83,7 +83,8 @@ class PublishSuccessScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(); 
+                    Navigator.of(context).pop(); 
                   },
                   child: const Text(
                     "Volver",

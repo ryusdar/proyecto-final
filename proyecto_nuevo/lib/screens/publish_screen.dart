@@ -3,6 +3,7 @@ import 'home_screen.dart';
 import 'publish_success_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/vynta_store.dart';
+import '../core/api_client.dart';
 import '../widgets/build_footer.dart';
 
 /// Formulario de publicación de un producto artesanal.
@@ -22,6 +23,7 @@ class _PublishScreenState extends State<PublishScreen> {
   String _selectedCategory = 'Hogar';
   IconData _selectedIcon = Icons.weekend;
   final _formKey = GlobalKey<FormState>();
+  bool _loading = false;
 
   static const Map<String, IconData> _categories = {
     'Hogar': Icons.chair,
@@ -29,6 +31,15 @@ class _PublishScreenState extends State<PublishScreen> {
     'Herramientas': Icons.handyman,
     'Manualidades': Icons.palette,
     'Decoración': Icons.light_mode,
+  };
+
+  // Ids de las categorías en el backend (deben coincidir con MySQL).
+  static const Map<String, int> _categoryIds = {
+    'Hogar': 1,
+    'Tecnología': 2,
+    'Herramientas': 3,
+    'Manualidades': 4,
+    'Decoración': 5,
   };
 
   @override
@@ -39,25 +50,81 @@ class _PublishScreenState extends State<PublishScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  /// Si el usuario todavía no es vendedor, lo convierte.
+  Future<void> _ensureSeller(int userId) async {
+    try {
+      await ApiClient.get('/api/vendedores/$userId');
+    } on ApiException {
+      // No existe: lo creamos con una tienda por defecto
+      final nombre = VyntaStore.instance.userName ?? 'Mi tienda';
+      await ApiClient.post('/api/vendedores', {
+        'usuarioId': userId,
+        'nombreTienda': 'Tienda de $nombre',
+      });
+    }
+  }
+
+  Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final name = _nameController.text.trim();
-    final priceText = _priceController.text.trim();
-    // Formatea el precio
-    final numeric =
-        int.tryParse(priceText.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
-    final price = VyntaStore.instance.formatPrice(numeric);
-
     final store = VyntaStore.instance;
-    store.publishProduct(VyntaProduct(name, price, _selectedIcon));
+    final userId = store.userId;
+    if (userId == null) {
+      _showMessage('Iniciá sesión para publicar');
+      return;
+    }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PublishSuccessScreen(name: name, price: price),
-      ),
-    );
+    final name = _nameController.text.trim();
+    final numeric =
+        int.tryParse(_priceController.text.replaceAll(RegExp(r'[^\d]'), '')) ??
+            0;
+    final price = store.formatPrice(numeric);
+
+    setState(() => _loading = true);
+    try {
+      await _ensureSeller(userId);
+
+      final r = await ApiClient.post('/api/productos', {
+        'vendedorId': userId,
+        'categoriaId': _categoryIds[_selectedCategory],
+        'nombre': name,
+        'descripcion': _descController.text.trim(),
+        'precio': numeric,
+        'stock': 1,
+      });
+
+      store.publishProduct(
+        VyntaProduct(
+          name,
+          price,
+          _selectedIcon,
+          id: (r['id'] as num).toInt(),
+        ),
+      );
+
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PublishSuccessScreen(name: name, price: price),
+        ),
+      );
+    } on ApiException catch (e) {
+      _showMessage(
+        e.statusCode == 500
+            ? 'No se pudo publicar. Revisá que la categoría exista.'
+            : e.message,
+      );
+    } catch (_) {
+      _showMessage('No se pudo publicar el producto');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -303,12 +370,21 @@ class _PublishScreenState extends State<PublishScreen> {
                         borderRadius: BorderRadius.circular(VyntaColors.radius),
                       ),
                     ),
-                    onPressed: _submit,
-                    icon: const Icon(
-                      Icons.cloud_upload_outlined,
-                      color: VyntaColors.ink,
-                      size: 20,
-                    ),
+                    onPressed: _loading ? null : _submit,
+                    icon: _loading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: VyntaColors.ink,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.cloud_upload_outlined,
+                            color: VyntaColors.ink,
+                            size: 20,
+                          ),
                     label: const Text(
                       "Publicar",
                       style: TextStyle(

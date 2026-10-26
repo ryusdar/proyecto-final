@@ -2,19 +2,84 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'product_detail_screen.dart';
 import '../core/vynta_colors.dart';
+import '../core/api_client.dart';
 import '../widgets/build_footer.dart';
 
 /// Perfil del vendedor que publicó un producto.
-
-class SellerProfileScreen extends StatelessWidget {
+class SellerProfileScreen extends StatefulWidget {
   final VyntaProduct product;
   const SellerProfileScreen({super.key, required this.product});
 
-  /// Nombre del vendedor
-  String get _sellerName => 'Artesano ${product.name.split(' ').first}';
+  @override
+  State<SellerProfileScreen> createState() => _SellerProfileScreenState();
+}
+
+class _SellerProfileScreenState extends State<SellerProfileScreen> {
+  String? _storeName;
+  String? _storeDescription;
+  List<VyntaProduct> _products = [];
+  bool _loading = true;
+  String? _error;
+
+  VyntaProduct get product => widget.product;
+
+  /// Nombre a mostrar: el real si cargó, si no uno por defecto.
+  String get _sellerName =>
+      _storeName ?? 'Artesano ${product.name.split(' ').first}';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final sellerId = product.sellerId;
+    if (sellerId == null) {
+      // Producto de ejemplo (sin vendedor real)
+      setState(() {
+        _products = [product];
+        _loading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final v = await ApiClient.get('/api/vendedores/$sellerId')
+          as Map<String, dynamic>;
+      final data = await ApiClient.get('/api/productos/vendedor/$sellerId')
+          as List<dynamic>;
+      final list = data
+          .map((e) => VyntaProduct.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      if (!mounted) return;
+      setState(() {
+        _storeName = v['nombreTienda'] as String?;
+        _storeDescription = v['descripcion'] as String?;
+        _products = list;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final about =
+        (_storeDescription != null && _storeDescription!.trim().isNotEmpty)
+            ? _storeDescription!
+            : 'Este artesano todavía no escribió una descripción.';
+
     return Scaffold(
       backgroundColor: VyntaColors.contentGrey,
       body: Center(
@@ -74,6 +139,7 @@ class SellerProfileScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             _sellerName,
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 19,
@@ -82,7 +148,7 @@ class SellerProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            "Artesano · Miembro desde 2023",
+                            "Artesano",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
@@ -95,20 +161,8 @@ class SellerProfileScreen extends StatelessWidget {
                             children: [
                               _StatItem(
                                 icon: Icons.inventory_2,
-                                value: "24",
+                                value: '${_products.length}',
                                 label: "Productos",
-                              ),
-                              const SizedBox(width: 28),
-                              _StatItem(
-                                icon: Icons.star,
-                                value: "4.8",
-                                label: "Calificación",
-                              ),
-                              const SizedBox(width: 28),
-                              _StatItem(
-                                icon: Icons.shopping_bag,
-                                value: "312",
-                                label: "Ventas",
                               ),
                             ],
                           ),
@@ -144,11 +198,9 @@ class SellerProfileScreen extends StatelessWidget {
                             VyntaColors.radius,
                           ),
                         ),
-                        child: const Text(
-                          "Hacé tus manualidades con las manos y el corazón. "
-                          "Cada pieza es única, trabajada con materiales nobles "
-                          "y un acabado cuidado. Acepto pedidos personalizados.",
-                          style: TextStyle(
+                        child: Text(
+                          about,
+                          style: const TextStyle(
                             fontSize: 14,
                             height: 1.5,
                             color: VyntaColors.ink,
@@ -170,7 +222,7 @@ class SellerProfileScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '${_sellerProducts().length}',
+                            '${_products.length}',
                             style: const TextStyle(
                               fontSize: 13,
                               color: VyntaColors.brandPurple,
@@ -181,21 +233,7 @@ class SellerProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Grid de productos del vendedor
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _sellerProducts().length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.72,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                            ),
-                        itemBuilder: (_, i) =>
-                            _sellerProduct(context, _sellerProducts()[i]),
-                      ),
+                      _productsSection(),
                     ],
                   ),
                 ),
@@ -212,19 +250,43 @@ class SellerProfileScreen extends StatelessWidget {
     );
   }
 
-  /// Productos del vendedor
-
-  List<VyntaProduct> _sellerProducts() {
-    final all = HomeScreen.products;
-    // Muestra un subconjunto representativo (hasta 4) incluyendo el actual.
-    final sample = <VyntaProduct>[];
-    sample.add(product);
-    for (final p in all) {
-      if (p.name != product.name && sample.length < 4) {
-        sample.add(p);
-      }
+  /// Cargando, error con reintento, vacío o grilla de productos del vendedor.
+  Widget _productsSection() {
+    if (_loading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
-    return sample;
+    if (_error != null) {
+      return Center(
+        child: Column(
+          children: [
+            Text(_error!, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            TextButton(onPressed: _load, child: const Text("Reintentar")),
+          ],
+        ),
+      );
+    }
+    if (_products.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Center(child: Text("Este taller todavía no tiene productos")),
+      );
+    }
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _products.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.72,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+      ),
+      itemBuilder: (_, i) => _sellerProduct(context, _products[i]),
+    );
   }
 
   Widget _sellerProduct(BuildContext context, VyntaProduct p) {

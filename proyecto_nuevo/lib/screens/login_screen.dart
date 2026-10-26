@@ -4,6 +4,8 @@ import 'register_screen.dart';
 import '../widgets/vynta_logo.dart';
 import '../widgets/build_footer.dart';
 import '../core/vynta_colors.dart';
+import '../core/api_client.dart';
+import '../core/vynta_store.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +18,59 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage('Completá el correo y la contraseña');
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final r = await ApiClient.post('/api/auth/login', {
+        'email': email,
+        'password': password,
+      });
+
+      VyntaStore.instance.setSession(
+        (r['id'] as num).toInt(),
+        r['nombre'] as String,
+        r['email'] as String,
+      );
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainShell()),
+      );
+    } on ApiException catch (e) {
+      // El backend responde 500 cuando las credenciales no coinciden
+      final msg = (e.statusCode == 500 || e.statusCode == 400)
+          ? 'Correo o contraseña incorrectos'
+          : e.message;
+      _showMessage(msg);
+    } catch (_) {
+      _showMessage('No se pudo iniciar sesión');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
 
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
@@ -110,6 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    onSubmitted: (_) => _loading ? null : _login(),
                     style: const TextStyle(color: VyntaColors.cardWhite),
                     decoration: _inputDecoration('••••••••', Icons.lock_outline)
                         .copyWith(
@@ -152,22 +208,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MainShell(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Iniciar sesión",
-                        style: TextStyle(
-                          color: VyntaColors.ink,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
+                      onPressed: _loading ? null : _login,
+                      child: _loading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: VyntaColors.ink,
+                              ),
+                            )
+                          : const Text(
+                              "Iniciar sesión",
+                              style: TextStyle(
+                                color: VyntaColors.ink,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                     ),
                   ),
 

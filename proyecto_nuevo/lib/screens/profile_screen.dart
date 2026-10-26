@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'favorites_screen.dart';
 import 'publish_screen.dart';
+import 'login_screen.dart';
 import '../core/vynta_colors.dart';
+import '../core/vynta_store.dart';
 import '../widgets/build_footer.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -9,8 +11,21 @@ class ProfileScreen extends StatelessWidget {
   final bool showBack;
   const ProfileScreen({super.key, this.showBack = true});
 
+  void _logout(BuildContext context) {
+    VyntaStore.instance.logout();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final store = VyntaStore.instance;
+    final name = store.userName ?? "Invitado";
+    final email = store.userEmail ?? "";
+
     return Scaffold(
       backgroundColor: VyntaColors.contentGrey,
       body: Center(
@@ -48,11 +63,11 @@ class ProfileScreen extends StatelessWidget {
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
-                    const Center(
+                    Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircleAvatar(
+                          const CircleAvatar(
                             radius: 52,
                             backgroundColor: Colors.white,
                             child: CircleAvatar(
@@ -65,19 +80,19 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           Text(
-                            "Carlos Alberto Paviño",
-                            style: TextStyle(
+                            name,
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 17,
                               color: VyntaColors.ink,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            "carlospalito123@gmail.com",
-                            style: TextStyle(
+                            email,
+                            style: const TextStyle(
                               color: VyntaColors.ink,
                               fontSize: 14,
                             ),
@@ -120,6 +135,11 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     const _Option(Icons.settings_outlined, "Configuración"),
                     const _Option(Icons.help_outline, "Ayuda"),
+                    _Option(
+                      Icons.logout,
+                      "Cerrar sesión",
+                      onTap: () => _logout(context),
+                    ),
                     const SizedBox(height: 30),
                   ],
                 ),

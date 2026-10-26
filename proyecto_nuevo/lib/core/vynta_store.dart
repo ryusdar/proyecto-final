@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../screens/home_screen.dart';
+import 'api_client.dart';
 
 /// Ítem de carrito: producto + cantidad.
 class CartItem {
@@ -18,6 +19,37 @@ class VyntaStore extends ChangeNotifier {
   final List<VyntaProduct> _favorites = [];
   final List<VyntaProduct> _publications = [];
 
+  // ------- Sesión -------
+
+  int? userId; // en el backend es también el compradorId y el vendedorId
+  String? userName;
+  String? userEmail;
+
+  bool get isLoggedIn => userId != null;
+
+  void setSession(int id, String nombre, String email) {
+    userId = id;
+    userName = nombre;
+    userEmail = email;
+    notifyListeners();
+  }
+
+  void logout() {
+    userId = null;
+    userName = null;
+    userEmail = null;
+    _cart.clear();
+    _favorites.clear();
+    _publications.clear();
+    notifyListeners();
+  }
+
+  // ------- Comparación de productos -------
+
+  /// Compara por id del backend si ambos lo tienen; si no, por nombre (mocks).
+  bool _same(VyntaProduct a, VyntaProduct b) =>
+      a.id != null && b.id != null ? a.id == b.id : a.name == b.name;
+
   // ------- Carrito -------
 
   List<CartItem> get cart => List.unmodifiable(_cart);
@@ -34,7 +66,7 @@ class VyntaStore extends ChangeNotifier {
   }
 
   void addToCart(VyntaProduct p) {
-    final existing = _cart.where((i) => i.product.name == p.name).firstOrNull;
+    final existing = _cart.where((i) => _same(i.product, p)).firstOrNull;
     if (existing != null) {
       existing.quantity++;
     } else {
@@ -72,15 +104,64 @@ class VyntaStore extends ChangeNotifier {
   List<VyntaProduct> get favorites => List.unmodifiable(_favorites);
   int get favoritesCount => _favorites.length;
 
-  bool isFavorite(VyntaProduct p) => _favorites.any((f) => f.name == p.name);
+  bool isFavorite(VyntaProduct p) => _favorites.any((f) => _same(f, p));
 
+  /// Marca/desmarca en pantalla al instante y, si hay sesión y el producto
+  /// tiene id del backend, lo sincroniza en segundo plano.
   void toggleFavorite(VyntaProduct p) {
-    if (isFavorite(p)) {
-      _favorites.removeWhere((f) => f.name == p.name);
+    final eraFavorito = isFavorite(p);
+    if (eraFavorito) {
+      _favorites.removeWhere((f) => _same(f, p));
     } else {
       _favorites.add(p);
     }
     notifyListeners();
+    _syncFavorite(p, agregar: !eraFavorito);
+  }
+
+  Future<void> _syncFavorite(VyntaProduct p, {required bool agregar}) async {
+    final productoId = _productId(p);
+    if (userId == null || productoId == null) return;
+    try {
+      if (agregar) {
+        await ApiClient.post('/api/favoritos', {
+          'compradorId': userId,
+          'productoId': productoId,
+        });
+      } else {
+        await ApiClient.delete(
+            '/api/favoritos?compradorId=$userId&productoId=$productoId');
+      }
+    } catch (e) {
+      debugPrint('No se pudo sincronizar el favorito: $e');
+    }
+  }
+
+  // Devuelve el id del backend del producto (null en los mocks).
+  int? _productId(VyntaProduct p) => p.id;
+
+  /// Carga desde el backend los favoritos del usuario logueado.
+  Future<void> loadFavorites() async {
+    final id = userId;
+    if (id == null) return;
+    try {
+      final favs =
+          await ApiClient.get('/api/favoritos/comprador/$id') as List<dynamic>;
+      final loaded = <VyntaProduct>[];
+      for (final f in favs) {
+        final productoId =
+            ((f as Map<String, dynamic>)['productoId'] as num).toInt();
+        final p = await ApiClient.get('/api/productos/$productoId')
+            as Map<String, dynamic>;
+        loaded.add(VyntaProduct.fromJson(p));
+      }
+      _favorites
+        ..clear()
+        ..addAll(loaded);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('No se pudieron cargar los favoritos: $e');
+    }
   }
 
   // ------- Publicaciones (lado artesano) -------

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'checkout_confirmation_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/vynta_store.dart';
+import '../core/api_client.dart';
 import '../widgets/build_footer.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -17,16 +18,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       Icons.credit_card,
       'Tarjeta de crédito',
       'Visa · Masercard · Amex',
+      'TARJETA_CREDITO',
     ),
 
     _PaymentMethod(
       Icons.account_balance,
       'Transferencia bancaria',
       'CBU / CVU',
+      'TRANSFERENCIA',
     ),
   ];
 
   int _selectedMethod = 0;
+  bool _loading = false;
+
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -217,14 +226,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                           ),
                         ),
-                        onPressed: () {
-                          _confirmPurchase(store);
-                        },
-                        icon: const Icon(
-                          Icons.lock_outline,
-                          color: VyntaColors.ink,
-                          size: 20,
-                        ),
+                        onPressed: _loading
+                            ? null
+                            : () => _confirmPurchase(store),
+                        icon: _loading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: VyntaColors.ink,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.lock_outline,
+                                color: VyntaColors.ink,
+                                size: 20,
+                              ),
                         label: Text(
                           'Confirmar y pagar ${store.cartSubtotal}',
                           style: const TextStyle(
@@ -308,21 +326,76 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return store.formatPrice(price * item.quantity);
   }
 
-  void _confirmPurchase(VyntaStore store) {
-    // Guarda el total pagado antes de limpiar el carrito.
+  /// Busca en el backend el id del tipo de pago según su código.
+  Future<int> _paymentTypeId(String codigo) async {
+    final data = await ApiClient.get('/api/tipos-pago') as List<dynamic>;
+    for (final t in data) {
+      final m = t as Map<String, dynamic>;
+      if (m['codigo'] == codigo) return (m['id'] as num).toInt();
+    }
+    throw ApiException('El tipo de pago "$codigo" no está cargado en el servidor');
+  }
+
+    Future<void> _confirmPurchase(VyntaStore store) async {
+    final userId = store.userId;
+    if (userId == null) {
+      _showMessage('Iniciá sesión para comprar');
+      return;
+    }
+
+    final items = List<CartItem>.from(store.cart);
+    if (items.any((i) => i.product.id == null)) {
+      _showMessage(
+        'El carrito tiene productos de ejemplo que no se pueden comprar. Quitalos e intentá de nuevo.',
+      );
+      return;
+    }
+
+    // Guarda el total y el método antes de limpiar el carrito.
     final paid = store.cartSubtotal;
-    final methodName = _methods[_selectedMethod].name;
+    final method = _methods[_selectedMethod];
 
-    // Simula el pago,limpia el carrito y pasa a la confirmación.
-    store.clearCart();
+    setState(() => _loading = true);
+    try {
+      final tipoPagoId = await _paymentTypeId(method.code);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            CheckoutConfirmationScreen(total: paid, method: methodName),
-      ),
-    );
+      final pedido = await ApiClient.post('/api/pedidos', {
+        'compradorId': userId,
+        'tipoPagoId': tipoPagoId,
+      });
+      final pedidoId = (pedido['id'] as num).toInt();
+
+      for (final item in items) {
+        await ApiClient.post('/api/pedidos/$pedidoId/items', {
+          'productoId': item.product.id,
+          'cantidad': item.quantity,
+        });
+      }
+
+      store.clearCart();
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CheckoutConfirmationScreen(
+            total: paid,
+            method: method.name,
+            orderId: pedidoId,
+          ),
+        ),
+      );
+    } on ApiException catch (e) {
+      _showMessage(
+        e.statusCode == 500
+            ? 'No se pudo crear el pedido. Revisá que los productos sigan disponibles.'
+            : e.message,
+      );
+    } catch (_) {
+      _showMessage('No se pudo completar la compra');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 }
 
@@ -330,5 +403,6 @@ class _PaymentMethod {
   final IconData icon;
   final String name;
   final String subtitle;
-  const _PaymentMethod(this.icon, this.name, this.subtitle);
+  final String code; // código del tipo de pago en el backend
+  const _PaymentMethod(this.icon, this.name, this.subtitle, this.code);
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import 'main_shell.dart';
 import '../widgets/vynta_logo.dart';
 import '../core/vynta_colors.dart';
+import '../core/api_client.dart';
+import '../core/vynta_store.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,6 +19,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
 
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
@@ -47,13 +59,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _register() {
-    // solo navega al Home tras "registrarse".
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+  Future<void> _register() async {
+    final nombre = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirm = _confirmController.text;
+
+    if (nombre.isEmpty || email.isEmpty || password.isEmpty) {
+      _showMessage('Completá todos los campos');
+      return;
+    }
+    if (!email.contains('@')) {
+      _showMessage('El correo no es válido');
+      return;
+    }
+    if (password.length < 8) {
+      _showMessage('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    if (password != confirm) {
+      _showMessage('Las contraseñas no coinciden');
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final r = await ApiClient.post('/api/auth/registro', {
+        'nombre': nombre,
+        'email': email,
+        'password': password,
+      });
+
+      VyntaStore.instance.setSession(
+        (r['id'] as num).toInt(),
+        r['nombre'] as String,
+        r['email'] as String,
+      );
+
+      if (!mounted) return;
+      // Reemplaza todo el stack para que "volver" no regrese al registro/login
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const MainShell()),
+        (route) => false,
+      );
+    } on ApiException catch (e) {
+      // El backend responde 500 si el email ya está registrado
+      final msg = e.statusCode == 500
+          ? 'No se pudo registrar. ¿El correo ya está en uso?'
+          : e.message;
+      _showMessage(msg);
+    } catch (_) {
+      _showMessage('No se pudo registrar');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -151,7 +216,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: const TextStyle(color: VyntaColors.cardWhite),
                     decoration:
                         _inputDecoration(
-                          'Mínimo 6 caracteres',
+                          'Mínimo 8 caracteres',
                           Icons.lock_outline,
                         ).copyWith(
                           suffixIcon: IconButton(
@@ -181,6 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextField(
                     controller: _confirmController,
                     obscureText: _obscureConfirm,
+                    onSubmitted: (_) => _loading ? null : _register(),
                     style: const TextStyle(color: VyntaColors.cardWhite),
                     decoration:
                         _inputDecoration(
@@ -215,15 +281,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                       ),
-                      onPressed: _register,
-                      child: const Text(
-                        "Registrarme",
-                        style: TextStyle(
-                          color: VyntaColors.ink,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
+                      onPressed: _loading ? null : _register,
+                      child: _loading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: VyntaColors.ink,
+                              ),
+                            )
+                          : const Text(
+                              "Registrarme",
+                              style: TextStyle(
+                                color: VyntaColors.ink,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                     ),
                   ),
 

@@ -2,17 +2,105 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'product_detail_screen.dart';
 import '../core/vynta_colors.dart';
+import '../core/api_client.dart';
 import '../widgets/build_footer.dart';
 
 /// Listado de productos de una categoría.
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   final VyntaCategory category;
   const CategoryScreen({super.key, required this.category});
 
   @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  // Ids de las categorías en el backend (deben coincidir con MySQL).
+  static const Map<String, int> _categoryIds = {
+    'Hogar': 1,
+    'Tecnología': 2,
+    'Herramientas': 3,
+    'Manualidades': 4,
+    'Decoración': 5,
+  };
+
+  List<VyntaProduct> _products = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final id = _categoryIds[widget.category.name];
+      if (id == null) {
+        throw ApiException('Categoría desconocida');
+      }
+      final data =
+          await ApiClient.get('/api/productos/categoria/$id') as List<dynamic>;
+      final list = data
+          .map((e) => VyntaProduct.fromJson(e as Map<String, dynamic>))
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _products = list;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  Widget _body() {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_error!, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            TextButton(onPressed: _load, child: const Text("Reintentar")),
+          ],
+        ),
+      );
+    }
+    if (_products.isEmpty) {
+      return const Center(
+        child: Text("Todavía no hay productos en esta categoría"),
+      );
+    }
+    return GridView.builder(
+      padding: const EdgeInsets.all(14),
+      itemCount: _products.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.72,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+      ),
+      itemBuilder: (_, i) => _productCard(context, _products[i]),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final products = HomeScreen.products;
+    final category = widget.category;
 
     return Scaffold(
       backgroundColor: VyntaColors.contentGrey,
@@ -50,7 +138,7 @@ class CategoryScreen extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${products.length}',
+                      '${_products.length}',
                       style: const TextStyle(
                         color: VyntaColors.cardWhite,
                         fontWeight: FontWeight.w600,
@@ -62,19 +150,7 @@ class CategoryScreen extends StatelessWidget {
               ),
 
               // Grid de productos
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(14),
-                  itemCount: products.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.72,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                  ),
-                  itemBuilder: (_, i) => _productCard(context, products[i]),
-                ),
-              ),
+              Expanded(child: _body()),
 
               const Padding(
                 padding: EdgeInsets.only(bottom: 4),
