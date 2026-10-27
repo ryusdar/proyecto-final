@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Centra el contenido y limita su ancho máximo.
-/// En celular ocupa todo el ancho; en pantallas grandes queda centrado.
+
 class AppFrame extends StatelessWidget {
   final Widget child;
   final Color color;

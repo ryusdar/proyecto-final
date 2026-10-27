@@ -7,8 +7,6 @@ import '../core/api_client.dart';
 import '../widgets/app_frame.dart';
 import '../widgets/build_footer.dart';
 
-/// Formulario de publicación de un producto artesanal.
-
 class PublishScreen extends StatefulWidget {
   const PublishScreen({super.key});
 
@@ -46,6 +44,17 @@ class _PublishScreenState extends State<PublishScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Normaliza para comparar: minúsculas, sin tildes y sin espacios sobrantes.
+  String _normalize(String s) {
+    const from = 'áàäâéèëêíìïîóòöôúùüûñ';
+    const to = 'aaaaeeeeiiiioooouuuun';
+    var out = s.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    for (var i = 0; i < from.length; i++) {
+      out = out.replaceAll(from[i], to[i]);
+    }
+    return out;
+  }
+
   Future<void> _loadCategories() async {
     try {
       final data = await ApiClient.get('/api/categorias') as List<dynamic>;
@@ -62,12 +71,69 @@ class _PublishScreenState extends State<PublishScreen> {
     }
   }
 
-  /// Si el usuario todavía no es vendedor, lo convierte.
+  Future<void> _addCategory() async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Nueva categoría'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 50,
+          decoration: const InputDecoration(hintText: 'Ej: Cerámica'),
+          onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Crear'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (name == null || name.isEmpty) return;
+
+    final existing = _cats
+        .where((c) => _normalize(c.name) == _normalize(name))
+        .firstOrNull;
+    if (existing != null) {
+      setState(() => _selected = existing);
+      _showMessage('La categoría "${existing.name}" ya existe');
+      return;
+    }
+
+    try {
+      final r = await ApiClient.post('/api/categorias', {'nombre': name})
+          as Map<String, dynamic>;
+      final created = VyntaCategory.fromJson(r);
+      if (!mounted) return;
+      setState(() {
+        _cats = [..._cats, created];
+        _selected = created;
+      });
+      VyntaStore.instance.notifyCatalogChanged();
+      _showMessage('Categoría "$name" creada');
+    } on ApiException catch (e) {
+      _showMessage(
+        e.statusCode == 500 ? 'Esa categoría ya existe' : e.message,
+      );
+      await _loadCategories();
+    } catch (_) {
+      _showMessage('No se pudo crear la categoría');
+    }
+  }
+
   Future<void> _ensureSeller(int userId) async {
     try {
       await ApiClient.get('/api/vendedores/$userId');
     } on ApiException {
-      // No existe: lo creamos con una tienda por defecto
       final nombre = VyntaStore.instance.userName ?? 'Mi tienda';
       await ApiClient.post('/api/vendedores', {
         'usuarioId': userId,
@@ -150,7 +216,6 @@ class _PublishScreenState extends State<PublishScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Encabezado de artesano
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(4, 8, 18, 14),
@@ -186,7 +251,6 @@ class _PublishScreenState extends State<PublishScreen> {
               ),
             ),
 
-            // Formulario
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -195,7 +259,6 @@ class _PublishScreenState extends State<PublishScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Foto
                       Center(
                         child: Container(
                           width: 120,
@@ -233,7 +296,6 @@ class _PublishScreenState extends State<PublishScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Nombre
                       const Text(
                         "Nombre del producto",
                         style: TextStyle(
@@ -253,7 +315,6 @@ class _PublishScreenState extends State<PublishScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Categoría
                       const Text(
                         "Categoría",
                         style: TextStyle(
@@ -264,7 +325,7 @@ class _PublishScreenState extends State<PublishScreen> {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<VyntaCategory>(
-                        key: ValueKey(_cats.length),
+                        key: ValueKey('${_cats.length}-${_selected?.id}'),
                         isExpanded: true,
                         initialValue: _selected,
                         dropdownColor: VyntaColors.cardWhite,
@@ -298,9 +359,16 @@ class _PublishScreenState extends State<PublishScreen> {
                             .toList(),
                         onChanged: (v) => setState(() => _selected = v),
                       ),
-                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: _addCategory,
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Nueva categoría'),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
 
-                      // Precio
                       const Text(
                         "Precio",
                         style: TextStyle(
@@ -326,7 +394,6 @@ class _PublishScreenState extends State<PublishScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Descripción
                       const Text(
                         "Descripción",
                         style: TextStyle(
@@ -368,7 +435,6 @@ class _PublishScreenState extends State<PublishScreen> {
               child: BuildFooter(color: Colors.black45),
             ),
 
-            // Botón publicar (fijo abajo)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
