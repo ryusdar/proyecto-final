@@ -177,7 +177,7 @@ class _PublishScreenState extends State<PublishScreen> {
         'stock': 1,
       });
 
-      store.publishProduct(
+            store.publishProduct(
         VyntaProduct(
           name,
           price,
@@ -185,6 +185,7 @@ class _PublishScreenState extends State<PublishScreen> {
           id: (r['id'] as num).toInt(),
         ),
       );
+      store.notifyCatalogChanged();
 
       if (!mounted) return;
       Navigator.push(
