@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'favorites_screen.dart';
 import 'publish_screen.dart';
+import 'login_screen.dart';
 import '../core/vynta_colors.dart';
+import '../core/vynta_store.dart';
+import '../widgets/app_frame.dart';
 import '../widgets/build_footer.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -9,127 +12,184 @@ class ProfileScreen extends StatelessWidget {
   final bool showBack;
   const ProfileScreen({super.key, this.showBack = true});
 
+  void _logout(BuildContext context) {
+    VyntaStore.instance.logout();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final store = VyntaStore.instance;
+    final name = store.userName ?? "Invitado";
+    final email = store.userEmail ?? "";
+
     return Scaffold(
       backgroundColor: VyntaColors.contentGrey,
-      body: Center(
-        child: Container(
-          width: 390,
-          color: VyntaColors.contentGrey,
-          child: Column(
-            children: [
-              // Header de perfil
-              Container(
-                width: double.infinity,
-                height: 230,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [VyntaColors.accentTurquoise, Color(0xFF63E6FF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
-                child: Stack(
+      body: AppFrame(
+        color: VyntaColors.contentGrey,
+        maxWidth: 900,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
                   children: [
-                    if (showBack)
-                      Positioned(
-                        top: 20,
-                        left: 10,
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: VyntaColors.ink,
-                          ),
-                          onPressed: () => Navigator.pop(context),
+                    // Header de perfil
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(minHeight: 230),
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            VyntaColors.accentTurquoise,
+                            Color(0xFF63E6FF),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
                         ),
                       ),
-                    const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 52,
-                            backgroundColor: Colors.white,
-                            child: CircleAvatar(
-                              radius: 46,
-                              backgroundColor: VyntaColors.brandPurple,
-                              child: Icon(
-                                Icons.person,
-                                size: 54,
-                                color: Colors.white,
+                          if (showBack)
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_back,
+                                  color: VyntaColors.ink,
+                                ),
+                                onPressed: () => Navigator.pop(context),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            "Carlos Alberto Paviño",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                              color: VyntaColors.ink,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            "carlospalito123@gmail.com",
-                            style: TextStyle(
-                              color: VyntaColors.ink,
-                              fontSize: 14,
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const CircleAvatar(
+                                    radius: 52,
+                                    backgroundColor: Colors.white,
+                                    child: CircleAvatar(
+                                      radius: 46,
+                                      backgroundColor:
+                                          VyntaColors.brandPurple,
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 54,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                      color: VyntaColors.ink,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    email,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: VyntaColors.ink,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 18),
+                    const SizedBox(height: 18),
 
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  children: [
-                    // Acceso al panel del artesano
-                    _publishButton(context),
-                    const SizedBox(height: 20),
-                    const _SectionTitle("Mi cuenta"),
-                    const SizedBox(height: 8),
-                    const _Option(Icons.info_outline, "Información personal"),
-                    _Option(
-                      Icons.favorite_outline,
-                      "Favoritos",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const FavoritesScreen(),
+                    // Opciones (ancho máximo para que no se estiren)
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Acceso al panel del artesano
+                              _publishButton(context),
+                              const SizedBox(height: 20),
+                              const _SectionTitle("Mi cuenta"),
+                              const SizedBox(height: 8),
+                              const _Option(
+                                Icons.info_outline,
+                                "Información personal",
+                              ),
+                              _Option(
+                                Icons.favorite_outline,
+                                "Favoritos",
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const FavoritesScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const _Option(
+                                Icons.shopping_bag_outlined,
+                                "Compras",
+                              ),
+                              const _Option(
+                                Icons.payment_outlined,
+                                "Métodos de pago",
+                              ),
+                              const SizedBox(height: 20),
+                              const _SectionTitle("Más"),
+                              const SizedBox(height: 8),
+                              const _Option(
+                                Icons.settings_outlined,
+                                "Configuración",
+                              ),
+                              const _Option(Icons.help_outline, "Ayuda"),
+                              _Option(
+                                Icons.logout,
+                                "Cerrar sesión",
+                                onTap: () => _logout(context),
+                              ),
+                              const SizedBox(height: 30),
+                            ],
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
-                    const _Option(Icons.shopping_bag_outlined, "Compras"),
-                    const _Option(Icons.payment_outlined, "Métodos de pago"),
-                    const SizedBox(height: 20),
-                    const _SectionTitle("Más"),
-                    const SizedBox(height: 8),
-                    const _Option(Icons.settings_outlined, "Configuración"),
-                    const _Option(Icons.help_outline, "Ayuda"),
-                    const SizedBox(height: 30),
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 6),
-                child: BuildFooter(color: Colors.black45),
-              ),
-            ],
-          ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 6),
+              child: BuildFooter(color: Colors.black45),
+            ),
+          ],
         ),
       ),
     );
@@ -172,6 +232,8 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   Text(
                     "Publicá tu artesanía",
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -181,6 +243,8 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(height: 2),
                   Text(
                     "Vendé en tu taller",
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
@@ -229,6 +293,8 @@ class _Option extends StatelessWidget {
           ),
           title: Text(
             text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 14,
               color: VyntaColors.ink,

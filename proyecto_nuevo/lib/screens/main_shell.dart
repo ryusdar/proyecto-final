@@ -26,6 +26,8 @@ class _MainShellState extends State<MainShell> {
   void initState() {
     super.initState();
     _index = widget.initialIndex;
+    // Trae los favoritos guardados en el backend al iniciar sesión.
+    VyntaStore.instance.loadFavorites();
   }
 
   @override
@@ -41,49 +43,62 @@ class _MainShellState extends State<MainShell> {
           ProfileScreen(showBack: false),
         ],
       ),
-      // Barra de navegación inferior
+      // Barra de navegación inferior, con el mismo ancho máximo que el contenido
       bottomNavigationBar: ListenableBuilder(
         listenable: VyntaStore.instance,
         builder: (context, _) {
           final store = VyntaStore.instance;
-          return NavigationBar(
-            backgroundColor: VyntaColors.cardWhite,
-            selectedIndex: _index,
-            onDestinationSelected: (i) => setState(() => _index = i),
-            destinations: [
-              const NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_filled),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: _ShellIcon(
-                  icon: Icons.shopping_cart_outlined,
-                  badge: store.cartCount,
+          return Container(
+            color: VyntaColors.contentGrey,
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: NavigationBar(
+                  backgroundColor: VyntaColors.cardWhite,
+                  selectedIndex: _index,
+                  onDestinationSelected: (i) {
+                    setState(() => _index = i);
+                    // Al entrar a Favoritos, refresca desde el backend.
+                    if (i == 2) store.loadFavorites();
+                  },
+                  destinations: [
+                    const NavigationDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home_filled),
+                      label: 'Home',
+                    ),
+                    NavigationDestination(
+                      icon: _ShellIcon(
+                        icon: Icons.shopping_cart_outlined,
+                        badge: store.cartCount,
+                      ),
+                      selectedIcon: _ShellIcon(
+                        icon: Icons.shopping_cart,
+                        badge: store.cartCount,
+                      ),
+                      label: 'Carrito',
+                    ),
+                    NavigationDestination(
+                      icon: _ShellIcon(
+                        icon: Icons.favorite_outline,
+                        badge: store.favoritesCount,
+                      ),
+                      selectedIcon: _ShellIcon(
+                        icon: Icons.favorite,
+                        badge: store.favoritesCount,
+                      ),
+                      label: 'Favoritos',
+                    ),
+                    const NavigationDestination(
+                      icon: Icon(Icons.person_outline),
+                      selectedIcon: Icon(Icons.person),
+                      label: 'Perfil',
+                    ),
+                  ],
                 ),
-                selectedIcon: _ShellIcon(
-                  icon: Icons.shopping_cart,
-                  badge: store.cartCount,
-                ),
-                label: 'Carrito',
               ),
-              NavigationDestination(
-                icon: _ShellIcon(
-                  icon: Icons.favorite_outline,
-                  badge: store.favoritesCount,
-                ),
-                selectedIcon: _ShellIcon(
-                  icon: Icons.favorite,
-                  badge: store.favoritesCount,
-                ),
-                label: 'Favoritos',
-              ),
-              const NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: 'Perfil',
-              ),
-            ],
+            ),
           );
         },
       ),
