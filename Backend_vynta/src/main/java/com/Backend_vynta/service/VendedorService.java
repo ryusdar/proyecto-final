@@ -16,8 +16,7 @@ public class VendedorService {
     private final VendedorRepository vendedorRepository;
     private final UsuarioRepository usuarioRepository;
 
-    public VendedorService(VendedorRepository vendedorRepository,
-                           UsuarioRepository usuarioRepository) {
+    public VendedorService(VendedorRepository vendedorRepository, UsuarioRepository usuarioRepository) {
         this.vendedorRepository = vendedorRepository;
         this.usuarioRepository = usuarioRepository;
     }
@@ -42,7 +41,7 @@ public class VendedorService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Vendedor v = new Vendedor();
-        v.setUsuario(usuario);          // NO usar setIdVendedor: lo copia @MapsId
+        v.setUsuario(usuario); // NO usar setIdVendedor: lo copia @MapsId
         v.setNombreTienda(dto.nombreTienda());
         v.setDescripcion(dto.descripcion());
         v.setActivo(true);
@@ -71,7 +70,6 @@ public class VendedorService {
                 v.getUsuario().getId(),
                 v.getNombreTienda(),
                 v.getDescripcion(),
-                v.getActivo()
-        );
+                v.getActivo());
     }
 }
