@@ -3,6 +3,7 @@ import 'home_screen.dart';
 import 'product_detail_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/vynta_store.dart';
+import '../widgets/app_frame.dart';
 import '../widgets/build_footer.dart';
 
 class FavoritesScreen extends StatelessWidget {
@@ -12,26 +13,33 @@ class FavoritesScreen extends StatelessWidget {
 
   Widget _emptyState() {
     return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.favorite_border, size: 72, color: VyntaColors.contentGrey),
-          SizedBox(height: 16),
-          Text(
-            "Aún no tenés favoritos",
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: VyntaColors.ink,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border,
+              size: 72,
+              color: VyntaColors.contentGrey,
             ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            "Tocá el corazón en un producto\npara guardarlo acá.",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey, height: 1.5),
-          ),
-        ],
+            SizedBox(height: 16),
+            Text(
+              "Aún no tenés favoritos",
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: VyntaColors.ink,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Tocá el corazón en un producto\npara guardarlo acá.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, height: 1.5),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -46,71 +54,71 @@ class FavoritesScreen extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: VyntaColors.contentGrey,
-          body: Center(
-            child: Container(
-              width: 390,
-              height: double.infinity,
-              color: VyntaColors.contentGrey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Encabezado
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(4, 8, 18, 8),
-                    color: VyntaColors.navTeal,
-                    child: Row(
-                      children: [
-                        if (showBack)
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(
-                              Icons.arrow_back,
-                              color: VyntaColors.cardWhite,
-                            ),
+          body: AppFrame(
+            color: VyntaColors.contentGrey,
+            maxWidth: 900,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Encabezado
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(4, 8, 18, 8),
+                  color: VyntaColors.navTeal,
+                  child: Row(
+                    children: [
+                      if (showBack)
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: VyntaColors.cardWhite,
                           ),
-                        const Icon(
-                          Icons.favorite,
-                          color: VyntaColors.cardWhite,
-                        ),
-                        const SizedBox(width: 6),
-                        const Text(
+                        )
+                      else
+                        const SizedBox(width: 14),
+                      const Icon(Icons.favorite, color: VyntaColors.cardWhite),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Text(
                           "Mis favoritos",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: VyntaColors.cardWhite,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
 
-                  // Favoritos (o vacío)
-                  Expanded(
-                    child: favorites.isEmpty
-                        ? _emptyState()
-                        : GridView.builder(
-                            padding: const EdgeInsets.all(14),
-                            itemCount: favorites.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.72,
-                                  mainAxisSpacing: 12,
-                                  crossAxisSpacing: 12,
-                                ),
-                            itemBuilder: (_, i) =>
-                                _favoriteCard(context, favorites[i]),
+                // Favoritos (o vacío)
+                Expanded(
+                  child: favorites.isEmpty
+                      ? _emptyState()
+                      : GridView.builder(
+                          padding: const EdgeInsets.all(14),
+                          itemCount: favorites.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            childAspectRatio: 0.72,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
                           ),
-                  ),
+                          itemBuilder: (_, i) =>
+                              _favoriteCard(context, favorites[i]),
+                        ),
+                ),
 
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 4),
-                    child: BuildFooter(color: Colors.black45),
-                  ),
-                ],
-              ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 4),
+                  child: BuildFooter(color: Colors.black45),
+                ),
+              ],
             ),
           ),
         );
@@ -185,7 +193,7 @@ class FavoritesScreen extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -200,18 +208,22 @@ class FavoritesScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    p.price,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: VyntaColors.ink,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      p.price,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: VyntaColors.ink,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
-                    height: 36,
+                    height: 34,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: VyntaColors.accentTurquoise,
