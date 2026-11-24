@@ -25,8 +25,8 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
-/coverage/
+**/build/
+**/coverage/
 
 # Symbolication related
 app.*.symbols
@@ -34,17 +34,16 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Android Studio
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
 
-Backend_vynta/src/main/resources/application.properties
-.idea/
-
-*.iml
+# Backend (Spring Boot / Maven)
+**/target/
+**/src/main/resources/application.properties
+# Local / build
 .flutter-plugins
 .gradle/
 local.properties
 *.hprof
-application.properties

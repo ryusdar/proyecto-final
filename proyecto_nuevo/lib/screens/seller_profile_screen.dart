@@ -3,9 +3,9 @@ import 'home_screen.dart';
 import 'product_detail_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/api_client.dart';
+import '../widgets/app_frame.dart';
 import '../widgets/build_footer.dart';
 
-/// Perfil del vendedor que publicó un producto.
 class SellerProfileScreen extends StatefulWidget {
   final VyntaProduct product;
   const SellerProfileScreen({super.key, required this.product});
@@ -23,7 +23,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   VyntaProduct get product => widget.product;
 
-  /// Nombre a mostrar: el real si cargó, si no uno por defecto.
   String get _sellerName =>
       _storeName ?? 'Artesano ${product.name.split(' ').first}';
 
@@ -36,7 +35,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   Future<void> _load() async {
     final sellerId = product.sellerId;
     if (sellerId == null) {
-      // Producto de ejemplo (sin vendedor real)
       setState(() {
         _products = [product];
         _loading = false;
@@ -82,175 +80,187 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
     return Scaffold(
       backgroundColor: VyntaColors.contentGrey,
-      body: Center(
-        child: Container(
-          width: 390,
-          height: double.infinity,
-          color: VyntaColors.contentGrey,
-          child: Column(
-            children: [
-              // Header del vendedor
-              Container(
-                width: double.infinity,
-                height: 260,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [VyntaColors.brandPurple, Color(0xFF9C5BFF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
-                child: Stack(
+      body: AppFrame(
+        color: VyntaColors.contentGrey,
+        maxWidth: 900,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Positioned(
-                      top: 20,
-                      left: 10,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: VyntaColors.cardWhite,
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(minHeight: 260),
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            VyntaColors.brandPurple,
+                            Color(0xFF9C5BFF),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        onPressed: () => Navigator.pop(context),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        ),
                       ),
-                    ),
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 46,
-                            backgroundColor: VyntaColors.cardWhite.withValues(
-                              alpha: 0.25,
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: VyntaColors.cardWhite,
+                              ),
+                              onPressed: () => Navigator.pop(context),
                             ),
-                            child: const CircleAvatar(
-                              radius: 40,
-                              backgroundColor: VyntaColors.cardWhite,
-                              child: Icon(
-                                Icons.brush,
-                                size: 40,
-                                color: VyntaColors.brandPurple,
+                          ),
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 46,
+                                    backgroundColor: VyntaColors.cardWhite
+                                        .withValues(alpha: 0.25),
+                                    child: const CircleAvatar(
+                                      radius: 40,
+                                      backgroundColor: VyntaColors.cardWhite,
+                                      child: Icon(
+                                        Icons.brush,
+                                        size: 40,
+                                        color: VyntaColors.brandPurple,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _sellerName,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 19,
+                                      color: VyntaColors.cardWhite,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    "Artesano",
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      _StatItem(
+                                        icon: Icons.inventory_2,
+                                        value: '${_products.length}',
+                                        label: "Productos",
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _sellerName,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 19,
-                              color: VyntaColors.cardWhite,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "Artesano",
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          // Stats
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _StatItem(
-                                icon: Icons.inventory_2,
-                                value: '${_products.length}',
-                                label: "Productos",
-                              ),
-                            ],
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              // Contenido
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Sobre mí",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: VyntaColors.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: VyntaColors.cardWhite,
-                          borderRadius: BorderRadius.circular(
-                            VyntaColors.radius,
-                          ),
-                        ),
-                        child: Text(
-                          about,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            height: 1.5,
-                            color: VyntaColors.ink,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            "Productos del taller",
+                            "Sobre mí",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: VyntaColors.ink,
                             ),
                           ),
-                          Text(
-                            '${_products.length}',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: VyntaColors.brandPurple,
-                              fontWeight: FontWeight.w600,
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: VyntaColors.cardWhite,
+                              borderRadius: BorderRadius.circular(
+                                VyntaColors.radius,
+                              ),
+                            ),
+                            child: Text(
+                              about,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                height: 1.5,
+                                color: VyntaColors.ink,
+                              ),
                             ),
                           ),
+
+                          const SizedBox(height: 20),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  "Productos del taller",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: VyntaColors.ink,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${_products.length}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: VyntaColors.brandPurple,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          _productsSection(),
                         ],
                       ),
-                      const SizedBox(height: 12),
-
-                      _productsSection(),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
-              const Padding(
-                padding: EdgeInsets.only(bottom: 4),
-                child: BuildFooter(color: Colors.black45),
-              ),
-            ],
-          ),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: BuildFooter(color: Colors.black45),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// Cargando, error con reintento, vacío o grilla de productos del vendedor.
   Widget _productsSection() {
     if (_loading) {
       return const Padding(
@@ -260,12 +270,15 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     }
     if (_error != null) {
       return Center(
-        child: Column(
-          children: [
-            Text(_error!, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            TextButton(onPressed: _load, child: const Text("Reintentar")),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              Text(_error!, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              TextButton(onPressed: _load, child: const Text("Reintentar")),
+            ],
+          ),
         ),
       );
     }
@@ -279,8 +292,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _products.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 200,
         childAspectRatio: 0.72,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
@@ -326,7 +339,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -341,12 +354,16 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    p.price,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: VyntaColors.ink,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      p.price,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: VyntaColors.ink,
+                      ),
                     ),
                   ),
                 ],
@@ -359,7 +376,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   }
 }
 
-/// Ítem de estadística del header del vendedor.
 class _StatItem extends StatelessWidget {
   final IconData icon;
   final String value;

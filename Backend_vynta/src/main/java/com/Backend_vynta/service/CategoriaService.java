@@ -22,8 +22,12 @@ public class CategoriaService {
     }
 
     public CategoriaDTO crear(CategoriaDTO dto) {
+        String nombre = dto.nombre().trim();
+        if (categoriaRepository.existsByNombreIgnoreCase(nombre)) {
+            throw new RuntimeException("La categoría ya existe");
+        }
         Categoria categoria = new Categoria();
-        categoria.setNombre(dto.nombre());
+        categoria.setNombre(nombre);
         return aDTO(categoriaRepository.save(categoria));
     }
 

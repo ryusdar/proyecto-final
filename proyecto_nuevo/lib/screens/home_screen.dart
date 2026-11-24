@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'product_detail_screen.dart';
 import 'category_screen.dart';
@@ -12,7 +13,7 @@ class VyntaProduct {
   final String name;
   final String price;
   final IconData icon;
-  final int? id; // id del producto en el backend
+  final int? id;
   final String? description;
   final int? sellerId;
 
@@ -25,7 +26,6 @@ class VyntaProduct {
     this.sellerId,
   });
 
-  /// Convierte el JSON del backend (ProductoDTO) en un VyntaProduct.
   factory VyntaProduct.fromJson(Map<String, dynamic> json) {
     final precio = (json['precio'] as num).toInt();
     return VyntaProduct(
@@ -40,18 +40,16 @@ class VyntaProduct {
 }
 
 class VyntaCategory {
-  final int? id; // id de la categoría en el backend
+  final int? id;
   final String name;
   final IconData icon;
   const VyntaCategory(this.name, this.icon, {this.id});
 
-  // Recuerda el ícono de cada categoría para pintar los productos.
   static final Map<int, IconData> _iconsById = {};
 
   static IconData iconForId(int? id) =>
       _iconsById[id] ?? Icons.inventory_2_outlined;
 
-  /// El backend no guarda íconos: se eligen por nombre.
   static IconData iconForName(String name) {
     switch (name.trim().toLowerCase()) {
       case 'hogar':
@@ -91,21 +89,46 @@ class _HomeScreenState extends State<HomeScreen> {
   List<VyntaCategory> _categories = [];
   List<VyntaProduct> _products = [];
   bool _loading = true;
+  bool _hasLoaded = false;
   String? _error;
+  int _seenVersion = 0;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    _seenVersion = VyntaStore.instance.catalogVersion;
+    VyntaStore.instance.addListener(_onStoreChanged);
     _load();
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted && !_loading) _load();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    VyntaStore.instance.removeListener(_onStoreChanged);
+    super.dispose();
+  }
+
+  void _onStoreChanged() {
+    final v = VyntaStore.instance.catalogVersion;
+    if (v != _seenVersion) {
+      _seenVersion = v;
+      _load();
+    }
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    // Spinner solo la primera vez; las recargas son silenciosas.
+    if (!_hasLoaded) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
-      // Primero las categorías (los productos usan sus íconos).
       final cats = await ApiClient.get('/api/categorias') as List<dynamic>;
       final categories = cats
           .map((e) => VyntaCategory.fromJson(e as Map<String, dynamic>))
@@ -121,9 +144,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _categories = categories;
         _products = products;
         _loading = false;
+        _hasLoaded = true;
+        _error = null;
       });
     } catch (e) {
       if (!mounted) return;
+      // Si ya había datos, se conservan y no se muestra error.
+      if (_hasLoaded) return;
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -131,7 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Al tocarla abre la pantalla de Búsqueda completa.
   Widget _searchBar(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -187,7 +213,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Card de categoría y estilo de referencia.
   Widget _categoryCard(BuildContext context, VyntaCategory c) {
     return GestureDetector(
       onTap: () {
@@ -234,8 +259,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Card de producto imagen + nombre + precio
-  /// Al tocarla abre el Detalle de producto.
   Widget _productCard(BuildContext context, VyntaProduct p) {
     return GestureDetector(
       onTap: () {
@@ -347,7 +370,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Muestra cargando, error con reintento, vacío o la grilla de productos.
   Widget _productsSection() {
     if (_loading) {
       return const Padding(
@@ -408,7 +430,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Banner de productos recomendados
                       Container(
                         width: double.infinity,
                         constraints: const BoxConstraints(minHeight: 130),
@@ -520,7 +541,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Pie (oscuro sobre fondo claro)
             const Padding(
               padding: EdgeInsets.only(bottom: 4),
               child: BuildFooter(color: Colors.black45),

@@ -2,14 +2,11 @@ import 'package:flutter/foundation.dart';
 import '../screens/home_screen.dart';
 import 'api_client.dart';
 
-/// Ítem de carrito: producto + cantidad.
 class CartItem {
   final VyntaProduct product;
   int quantity;
   CartItem(this.product, this.quantity);
 }
-
-/// Carrito y favoritos en memoria mientras dura la sesión.
 
 class VyntaStore extends ChangeNotifier {
   VyntaStore._();
@@ -21,7 +18,7 @@ class VyntaStore extends ChangeNotifier {
 
   // ------- Sesión -------
 
-  int? userId; // en el backend es también el compradorId y el vendedorId
+  int? userId;
   String? userName;
   String? userEmail;
 
@@ -44,9 +41,17 @@ class VyntaStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ------- Catálogo -------
+
+  int catalogVersion = 0;
+
+  void notifyCatalogChanged() {
+    catalogVersion++;
+    notifyListeners();
+  }
+
   // ------- Comparación de productos -------
 
-  /// Compara por id del backend si ambos lo tienen; si no, por nombre (mocks).
   bool _same(VyntaProduct a, VyntaProduct b) =>
       a.id != null && b.id != null ? a.id == b.id : a.name == b.name;
 
@@ -56,7 +61,6 @@ class VyntaStore extends ChangeNotifier {
 
   int get cartCount => _cart.fold(0, (sum, item) => sum + item.quantity);
 
-  /// Subtotal en texto
   String get cartSubtotal {
     final total = _cart.fold<int>(
       0,
@@ -106,8 +110,6 @@ class VyntaStore extends ChangeNotifier {
 
   bool isFavorite(VyntaProduct p) => _favorites.any((f) => _same(f, p));
 
-  /// Marca/desmarca en pantalla al instante y, si hay sesión y el producto
-  /// tiene id del backend, lo sincroniza en segundo plano.
   void toggleFavorite(VyntaProduct p) {
     final eraFavorito = isFavorite(p);
     if (eraFavorito) {
@@ -137,10 +139,8 @@ class VyntaStore extends ChangeNotifier {
     }
   }
 
-  // Devuelve el id del backend del producto (null en los mocks).
   int? _productId(VyntaProduct p) => p.id;
 
-  /// Carga desde el backend los favoritos del usuario logueado.
   Future<void> loadFavorites() async {
     final id = userId;
     if (id == null) return;
@@ -164,26 +164,23 @@ class VyntaStore extends ChangeNotifier {
     }
   }
 
-  // ------- Publicaciones (lado artesano) -------
+  // ------- Publicaciones -------
 
   List<VyntaProduct> get publications => List.unmodifiable(_publications);
   int get publicationsCount => _publications.length;
 
-  /// Registra un producto publicado por el artesano
   void publishProduct(VyntaProduct p) {
     _publications.add(p);
     notifyListeners();
   }
 
-  // ------- Helpers de precio (dato mock "$ 8.500" -> int) -------
+  // ------- Helpers de precio -------
 
-  /// Convierte un precio en texto
   int priceToInt(String price) {
     final digits = price.replaceAll(RegExp(r'[^\d]'), '');
     return int.tryParse(digits) ?? 0;
   }
 
-  /// Formatea un entero a la moneda
   String formatPrice(int amount) => _formatPrice(amount);
 
   int _priceToInt(String price) {
