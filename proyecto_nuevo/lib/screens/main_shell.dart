@@ -3,7 +3,6 @@ import 'home_screen.dart';
 import 'cart_screen.dart';
 import 'favorites_screen.dart';
 import 'profile_screen.dart';
-import '../core/vynta_colors.dart';
 import '../core/vynta_store.dart';
 
 /// Usa [IndexedStack] para conservar el estado de cada pestaña al cambiar
@@ -33,7 +32,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: VyntaColors.contentGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(
         index: _index,
         children: const [
@@ -49,13 +48,13 @@ class _MainShellState extends State<MainShell> {
         builder: (context, _) {
           final store = VyntaStore.instance;
           return Container(
-            color: VyntaColors.contentGrey,
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: Center(
               heightFactor: 1,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 900),
                 child: NavigationBar(
-                  backgroundColor: VyntaColors.cardWhite,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   selectedIndex: _index,
                   onDestinationSelected: (i) {
                     setState(() => _index = i);

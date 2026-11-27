@@ -4,10 +4,12 @@ import 'home_screen.dart';
 import 'product_detail_screen.dart';
 import '../core/vynta_colors.dart';
 import '../core/api_client.dart';
+import '../core/accessibility_colors.dart';
+import '../core/accessibility_controller.dart';
 import '../widgets/app_frame.dart';
 import '../widgets/build_footer.dart';
 
-/// Pantalla de búsqueda de productos (consulta al backend).
+// Pantalla de busqueda de productos
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
@@ -17,8 +19,9 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
+
   Timer? _debounce;
-  int _requestId = 0; // para descartar respuestas viejas
+  int _requestId = 0;
 
   List<VyntaProduct> _results = [];
   bool _loading = true;
@@ -27,6 +30,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+
+    //se muestran todos los productos
     _search('');
   }
 
@@ -37,11 +42,15 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
+  // tarda 350 milisegundos antes de realizar la busqueda y evitar que se realicen muchas consultas a la vez
+
   void _onChanged(String value) {
     _debounce?.cancel();
+
     _debounce = Timer(const Duration(milliseconds: 350), () => _search(value));
   }
 
+  // Consulta los productos al backend
   Future<void> _search(String query) async {
     final q = query.trim();
     final myRequest = ++_requestId;
@@ -55,18 +64,22 @@ class _SearchScreenState extends State<SearchScreen> {
       final path = q.isEmpty
           ? '/api/productos'
           : '/api/productos/buscar?nombre=${Uri.encodeQueryComponent(q)}';
+
       final data = await ApiClient.get(path) as List<dynamic>;
+
       final list = data
           .map((e) => VyntaProduct.fromJson(e as Map<String, dynamic>))
           .toList();
 
       if (!mounted || myRequest != _requestId) return;
+
       setState(() {
         _results = list;
         _loading = false;
       });
     } catch (e) {
       if (!mounted || myRequest != _requestId) return;
+
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -74,10 +87,12 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  Widget _body() {
+  // Contenido principal
+  Widget _body(double fontScale) {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
+
     if (_error != null) {
       return Center(
         child: SingleChildScrollView(
@@ -85,20 +100,32 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_error!, textAlign: TextAlign.center),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14 * fontScale,
+                  color: AccessibilityColors.text(context),
+                ),
+              ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => _search(_controller.text),
-                child: const Text("Reintentar"),
+                child: Text(
+                  'Reintentar',
+                  style: TextStyle(fontSize: 14 * fontScale),
+                ),
               ),
             ],
           ),
         ),
       );
     }
+
     if (_results.isEmpty) {
       return const _NoResults();
     }
+
     return GridView.builder(
       padding: const EdgeInsets.all(14),
       itemCount: _results.length,
@@ -108,21 +135,28 @@ class _SearchScreenState extends State<SearchScreen> {
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
       ),
-      itemBuilder: (_, i) => _resultCard(context, _results[i]),
+      itemBuilder: (_, i) => _resultCard(context, _results[i], fontScale),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    //preferencias de accesibilidad
+    final accessibility = AccessibilityScope.of(context);
+    final fontScale = accessibility.fontScale;
+
+    // El fondo cambia segvn el tema seleccionado
+    final backgroundColor = AccessibilityColors.background(context);
+
     return Scaffold(
-      backgroundColor: VyntaColors.contentGrey,
+      backgroundColor: backgroundColor,
       body: AppFrame(
-        color: VyntaColors.contentGrey,
+        color: backgroundColor,
         maxWidth: 900,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Encabezado con campo de búsqueda
+            // Encabezado con campo de bisqueda
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(4, 8, 18, 14),
@@ -138,12 +172,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   Expanded(
                     child: Container(
-                      height: 44,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: VyntaColors.cardWhite,
-                        borderRadius: BorderRadius.circular(
-                          VyntaColors.radius,
-                        ),
+                        borderRadius: BorderRadius.circular(VyntaColors.radius),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: TextField(
@@ -151,15 +183,21 @@ class _SearchScreenState extends State<SearchScreen> {
                         autofocus: true,
                         onChanged: _onChanged,
                         onSubmitted: _search,
-                        decoration: const InputDecoration(
-                          hintText: "Buscar manualidades…",
+                        style: TextStyle(
+                          fontSize: 14 * fontScale,
+                          color: VyntaColors.ink,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Buscar manualidades…',
                           hintStyle: TextStyle(
-                            fontSize: 14,
+                            fontSize: 14 * fontScale,
                             color: Colors.grey,
                           ),
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -168,9 +206,10 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            // Resultados
-            Expanded(child: _body()),
+            // Resultados de la busqueda
+            Expanded(child: _body(fontScale)),
 
+            // Pie de pantalla
             const Padding(
               padding: EdgeInsets.only(bottom: 4),
               child: BuildFooter(color: Colors.black45),
@@ -181,7 +220,8 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _resultCard(BuildContext context, VyntaProduct p) {
+  /// Tarjeta de cada producto
+  Widget _resultCard(BuildContext context, VyntaProduct p, double fontScale) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -217,29 +257,34 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Icon(p.icon, size: 52, color: VyntaColors.brandPurple),
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  //nombre del producto
                   Text(
                     p.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                    style: TextStyle(
+                      fontSize: 12 * fontScale,
+                      color: VyntaColors.ink,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
+
                   const SizedBox(height: 6),
+
+                  // se usa el FittedBox para evita que se desborden la tarjetas
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
                       p.price,
-                      style: const TextStyle(
-                        fontSize: 15,
+                      style: TextStyle(
+                        fontSize: 15 * fontScale,
                         fontWeight: FontWeight.bold,
                         color: VyntaColors.ink,
                       ),
@@ -255,33 +300,48 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-/// Estado sin resultados de búsqueda.
+//muestra cuando no hay productos para la busqueda
 class _NoResults extends StatelessWidget {
   const _NoResults();
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    // Colores para que el mensaje se adapte al modo accesible
+    final textColor = AccessibilityColors.text(context);
+    final secondaryTextColor = AccessibilityColors.secondaryText(context);
+
+    final accessibility = AccessibilityScope.of(context);
+    final fontScale = accessibility.fontScale;
+
+    return Center(
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 64, color: VyntaColors.contentGrey),
-            SizedBox(height: 12),
+            const Icon(
+              Icons.search_off,
+              size: 64,
+              color: VyntaColors.contentGrey,
+            ),
+            const SizedBox(height: 12),
             Text(
-              "No encontramos productos",
+              'No encontramos productos',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16 * fontScale,
                 fontWeight: FontWeight.w600,
-                color: VyntaColors.ink,
+                color: textColor,
               ),
             ),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Text(
-              "Probá con otra búsqueda.",
-              style: TextStyle(color: Colors.grey),
+              'Probá con otra búsqueda.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14 * fontScale,
+                color: secondaryTextColor,
+              ),
             ),
           ],
         ),

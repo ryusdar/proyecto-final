@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../core/vynta_colors.dart';
+import '../core/accessibility_colors.dart';
+import '../core/accessibility_controller.dart';
 import '../widgets/app_frame.dart';
 
-/// Confirmación de que el producto se publicó con éxito.
+//confirmacion que el producto se publicó correctamente
 class PublishSuccessScreen extends StatelessWidget {
   final String name;
   final String price;
@@ -15,20 +17,29 @@ class PublishSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // preferencias de accesibilidad
+    final accessibility = AccessibilityScope.of(context);
+    final fontScale = accessibility.fontScale;
+
+    // Colores adaptados al modo de accesibilidad
+    final backgroundColor = AccessibilityColors.background(context);
+    final textColor = AccessibilityColors.text(context);
+    final secondaryTextColor = AccessibilityColors.secondaryText(context);
+
     return Scaffold(
-      backgroundColor: VyntaColors.contentGrey,
+      backgroundColor: backgroundColor,
       body: AppFrame(
-        color: VyntaColors.contentGrey,
+        color: backgroundColor,
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
+              // Evita que el contenido quede cortado en pantallas chicas
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Check de éxito
                     Container(
                       width: 96,
                       height: 96,
@@ -42,64 +53,74 @@ class PublishSuccessScreen extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
+
                     const SizedBox(height: 24),
 
-                    const Text(
+                    Text(
                       "¡Publicado!",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 22 * fontScale,
                         fontWeight: FontWeight.bold,
-                        color: VyntaColors.ink,
+                        color: textColor,
                       ),
                     ),
+
                     const SizedBox(height: 12),
 
                     Text(
                       'Tu producto "$name" ($price) ya está en tu taller.',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+                      style: TextStyle(
+                        fontSize: 14 * fontScale,
+                        color: secondaryTextColor,
                         height: 1.5,
                       ),
                     ),
+
                     const SizedBox(height: 8),
 
-                    const Text(
-                      'Los compradores ya pueden encontrarlo\nen las categorías y la búsqueda.',
+                    Text(
+                      'Los compradores ya pueden encontrarlo '
+                      'en las categorías y la búsqueda.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
+                        fontSize: 13 * fontScale,
+                        color: secondaryTextColor,
                         height: 1.5,
                       ),
                     ),
 
                     const SizedBox(height: 36),
 
+                    // Boton para regresar al perfil
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: VyntaColors.accentTurquoise,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(VyntaColors.radius),
+                          borderRadius: BorderRadius.circular(
+                            VyntaColors.radius,
+                          ),
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 40,
                           vertical: 16,
                         ),
                       ),
+
                       onPressed: () {
-                        Navigator.of(context).pop(); // cierra el éxito
-                        Navigator.of(context).pop(); // cierra el formulario
+                        //cerramos la confirmacion y el formulario de publicacion
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
                       },
-                      child: const Text(
+
+                      // Texto del boton con tamaño adaptable
+                      child: Text(
                         "Volver",
                         style: TextStyle(
                           color: VyntaColors.ink,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 15 * fontScale,
                         ),
                       ),
                     ),
